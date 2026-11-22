@@ -6,7 +6,7 @@ A single athlete workspace for planning training, understanding movement, record
 ## Product areas
 
 1. **Athlete profile** — goals, body metrics, training age, equipment, constraints, preferences and measurement history.
-2. **Movement Lab** — exercise library, anatomical landmarks, 2D/3D skeletal rig, joint transforms, pose keyframes, frame timeline, interpolation, angle calculations, motion import/export, camera capture and form comparison.
+2. **Movement Lab** — 33-landmark MediaPipe Pose Landmarker Full capture from camera/video, face and limb landmarks, per-point confidence, relative depth, bilateral 2D joint-angle readouts, pose keyframes and JSON export. 3D reconstruction, calibrated multi-view capture and exercise-specific form scoring remain future work.
 3. **Training** — split builder, exercise prescription, sets/reps/load/RIR/RPE, rest timers, supersets, progressive overload, periodization, deloads, session logs and personal records.
 4. **Nutrition** — searchable food composition database, branded food labels, recipes, serving scaling, barcode capture, meal templates, calories, macros, micros, water and targets.
 5. **Recovery** — manual sleep log, wearable sleep import, HR/HRV/resting HR, readiness, fatigue, soreness and hydration.
