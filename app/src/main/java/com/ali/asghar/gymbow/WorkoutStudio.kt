@@ -79,10 +79,26 @@ private val bones = listOf("head" to "neck","neck" to "shoulderL","neck" to "sho
  "wristL" to "thumbL1","thumbL1" to "thumbLm","thumbLm" to "thumbL2","wristL" to "indexL1","indexL1" to "indexLm","indexLm" to "indexL2","wristL" to "middleL1","middleL1" to "middleLm","middleLm" to "middleL2","wristL" to "ringL1","ringL1" to "ringLm","ringLm" to "ringL2","wristL" to "pinkyL1","pinkyL1" to "pinkyLm","pinkyLm" to "pinkyL2",
  "wristR" to "thumbR1","thumbR1" to "thumbRm","thumbRm" to "thumbR2","wristR" to "indexR1","indexR1" to "indexRm","indexRm" to "indexR2","wristR" to "middleR1","middleR1" to "middleRm","middleRm" to "middleR2","wristR" to "ringR1","ringR1" to "ringRm","ringRm" to "ringR2","wristR" to "pinkyR1","pinkyR1" to "pinkyRm","pinkyRm" to "pinkyR2","toeL" to "toeL1","toeL1" to "toeL2","toeR" to "toeR1","toeR1" to "toeR2")
 
-private fun loadPose(context:Context,key:String):List<Joint>{
- val saved=context.getSharedPreferences("gymbow-native",Context.MODE_PRIVATE).getString("pose_$key",null)?:return baseJoints
+private fun referencePose(name:String,phase:Int,view:String):List<Joint>{
+ val p=baseJoints.toMutableList()
+ fun set(id:String,x:Float?=null,y:Float?=null){val i=p.indexOfFirst{it.id==id};if(i>=0)p[i]=p[i].copy(x=x?:p[i].x,y=y?:p[i].y)}
+ val n=name.lowercase(Locale.US)
+ when {
+  "squat" in n || "leg press" in n || "hack squat" in n -> {val bend=when(phase){0->0f;1->.10f;2->.20f;else->.08f};set("hipL",y=.48f+bend);set("hipR",y=.48f+bend);set("kneeL",x=.38f,y=.68f+bend*.55f);set("kneeR",x=.62f,y=.68f+bend*.55f);set("ankleL",x=.34f);set("ankleR",x=.66f);set("elbowL",x=.32f,y=.28f+bend*.3f);set("elbowR",x=.68f,y=.28f+bend*.3f)}
+  "deadlift" in n || "romanian" in n -> {val hinge=if(phase==0||phase==3)0f else if(phase==1).18f else .25f;set("neck",x=.50f-hinge,y=.18f+hinge*.5f);set("head",x=.50f-hinge*1.2f,y=.10f+hinge*.6f);set("shoulderL",x=.39f-hinge,y=.24f+hinge);set("shoulderR",x=.61f-hinge,y=.24f+hinge);set("elbowL",x=.37f-hinge,y=.40f+hinge);set("elbowR",x=.63f-hinge,y=.40f+hinge);set("wristL",x=.42f-hinge,y=.53f+hinge);set("wristR",x=.58f-hinge,y=.53f+hinge);set("hipL",y=.48f);set("hipR",y=.48f);set("kneeL",y=.68f-hinge*.25f);set("kneeR",y=.68f-hinge*.25f)}
+  "bench" in n || "chest press" in n || "push-up" in n -> {set("head",x=.12f,y=.43f);set("neck",x=.22f,y=.43f);set("shoulderL",x=.30f,y=.40f);set("shoulderR",x=.30f,y=.46f);set("elbowL",x=.40f,y=if(phase==0||phase==3).30f else .56f);set("elbowR",x=.40f,y=if(phase==0||phase==3).56f else .30f);set("wristL",x=.51f,y=.30f);set("wristR",x=.51f,y=.56f);set("hipL",x=.65f,y=.43f);set("hipR",x=.65f,y=.45f);set("kneeL",x=.80f,y=.34f);set("kneeR",x=.80f,y=.50f);set("ankleL",x=.94f,y=.34f);set("ankleR",x=.94f,y=.50f)}
+  "overhead" in n -> {set("elbowL",x=.37f,y=if(phase==0).32f else .10f);set("elbowR",x=.63f,y=if(phase==0).32f else .10f);set("wristL",x=.37f,y=if(phase==0).22f else .03f);set("wristR",x=.63f,y=if(phase==0).22f else .03f)}
+  "curl" in n || "pushdown" in n -> {val raised=phase==1||phase==2;set("elbowL",x=.35f,y=.34f);set("elbowR",x=.65f,y=.34f);set("wristL",x=if(raised).40f else .28f,y=if(raised).28f else .46f);set("wristR",x=if(raised).60f else .72f,y=if(raised).28f else .46f)}
+  "lat pulldown" in n || "pull-up" in n -> {val pull=phase==1||phase==2;set("elbowL",x=if(pull).34f else .25f,y=if(pull).35f else .20f);set("elbowR",x=if(pull).66f else .75f,y=if(pull).35f else .20f);set("wristL",x=.40f,y=if(pull).40f else .02f);set("wristR",x=.60f,y=if(pull).40f else .02f)}
+ }
+ if(view=="BACK")return p.map{it.copy(x=1f-it.x)}
+ if(view=="SIDE")return p.map{j->j.copy(x=.5f+(j.x-.5f)*.42f)}
+ return p
+}
+private fun loadPose(context:Context,key:String,fallback:List<Joint> = baseJoints):List<Joint>{
+ val saved=context.getSharedPreferences("gymbow-native",Context.MODE_PRIVATE).getString("pose_$key",null)?:return fallback
  val coords=saved.split(";").mapNotNull{row->val p=row.split(",");if(p.size==3) p[0] to (p[1].toFloatOrNull()?:return@mapNotNull null) to (p[2].toFloatOrNull()?:return@mapNotNull null) else null}.associate{it.first.first to (it.first.second to it.second)}
- return baseJoints.map{j->coords[j.id]?.let{j.copy(x=it.first,y=it.second)}?:j}
+ return fallback.map{j->coords[j.id]?.let{j.copy(x=it.first,y=it.second)}?:j}
 }
 private fun savePose(context:Context,key:String,points:List<Joint>){
  context.getSharedPreferences("gymbow-native",Context.MODE_PRIVATE).edit().putString("pose_$key",points.joinToString(";"){"${it.id},${it.x},${it.y}"}).apply()
@@ -96,7 +112,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
  var equipment by rememberSaveable{mutableStateOf("All")}
  var view by rememberSaveable{mutableStateOf("FRONT")}
  var phase by rememberSaveable{mutableIntStateOf(0)}
- var points by remember{mutableStateOf(loadPose(ctx,"squat_front"))}
+ var points by remember{mutableStateOf(loadPose(ctx,"squat_front_0",referencePose("Barbell squat",0,"FRONT"))}
  var selectedJoint by rememberSaveable{mutableStateOf("kneeL")}
   val equipmentFilters=listOf("All","Barbell","Dumbbells","Machine","Cable","Bodyweight")
  val filtered=gymExercises.filter{(query.isBlank()||it.name.contains(query,true)||it.muscle.contains(query,true))&&(equipment=="All"||it.equipment.contains(equipment,true)||it.category==equipment)}
@@ -108,7 +124,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
    Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){equipmentFilters.forEach{filter->FilterChip(selected=equipment==filter,onClick={equipment=filter},label={Text(filter,fontSize=9.sp)})}}
    Text("SELECT MOVEMENT",fontSize=10.sp,fontWeight=FontWeight.Bold)
    Column(Modifier.heightIn(max=190.dp).fillMaxWidth()){
-    LazyColumn { items(filtered){ex->TextButton(onClick={selected=ex;phase=0;points=loadPose(ctx,ex.name.lowercase(Locale.US).replace(" ","_")+"_front")},modifier=Modifier.fillMaxWidth()){Column(Modifier.fillMaxWidth()){Text(ex.name,color=ink,fontWeight=FontWeight.Bold,fontSize=12.sp);Text("${ex.muscle} · ${ex.equipment}",color=muted,fontSize=9.sp)}}} }
+    LazyColumn { items(filtered){ex->TextButton(onClick={selected=ex;phase=0;points=loadPose(ctx,ex.name.lowercase(Locale.US).replace(" ","_")+"_front_0",referencePose(ex.name,0,"FRONT"))},modifier=Modifier.fillMaxWidth()){Column(Modifier.fillMaxWidth()){Text(ex.name,color=ink,fontWeight=FontWeight.Bold,fontSize=12.sp);Text("${ex.muscle} · ${ex.equipment}",color=muted,fontSize=9.sp)}}} }
    }
   } }
   item { Panel {
@@ -126,8 +142,8 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
   item { Panel {
    Eyebrow("MANUAL POSE STUDIO · ${baseJoints.size} ARTICULATION POINTS")
    Text("REFERENCE POSITION",fontSize=19.sp,fontWeight=FontWeight.Black)
-   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){listOf("FRONT","SIDE","BACK").forEach{v->FilterChip(selected=view==v,onClick={view=v;points=loadPose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${v.lowercase()}_$phase")},label={Text(v,fontSize=9.sp)})}}
-   Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){selected.phases.forEachIndexed{i,p->FilterChip(selected=phase==i,onClick={phase=i;points=loadPose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${view.lowercase()}_$i")},label={Text(p,fontSize=8.sp)})}}
+   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){listOf("FRONT","SIDE","BACK").forEach{v->FilterChip(selected=view==v,onClick={view=v;points=loadPose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${v.lowercase()}_$phase",referencePose(selected.name,phase,v))},label={Text(v,fontSize=9.sp)})}}
+   Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){selected.phases.forEachIndexed{i,p->FilterChip(selected=phase==i,onClick={phase=i;points=loadPose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${view.lowercase()}_$i",referencePose(selected.name,i,view))},label={Text(p,fontSize=8.sp)})}}
    Text("Drag any joint dot to pose the body. Select a point below for fine adjustment.",fontSize=9.sp,color=muted)
    PoseCanvas(points,selectedJoint,{selectedJoint=it},{updated->points=updated})
    val joint=points.firstOrNull{it.id==selectedJoint}?:points.first()
@@ -136,7 +152,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
    Slider(joint.x,{x->points=points.map{if(it.id==joint.id)it.copy(x=x)else it}},valueRange=.03f.. .97f)
    Text("VERTICAL",fontSize=8.sp,color=muted)
    Slider(joint.y,{y->points=points.map{if(it.id==joint.id)it.copy(y=y)else it}},valueRange=.02f.. .98f)
-   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("SAVE REFERENCE"){savePose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${view.lowercase()}_$phase",points)};LightButton("RESET POSE"){points=baseJoints}}
+   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("SAVE REFERENCE"){savePose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${view.lowercase()}_$phase",points)};LightButton("RESET POSE"){points=referencePose(selected.name,phase,view)}}
    Text("Manual reference is a coaching diagram, not a medical motion-capture measurement. Save a separate pose for each exercise phase and camera-free view.",fontSize=9.sp,color=muted)
   } }
   item { Panel {
@@ -172,7 +188,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
  var selected by rememberSaveable{mutableStateOf("Barbell squat")}
  LaunchedEffect(running){while(running){delay(1000);elapsed++}}
  LaunchedEffect(restRunning){while(restRunning&&rest>0){delay(1000);rest--};if(rest==0)restRunning=false}
- LaunchedEffect(selected,phaseIndex){runnerPose=loadPose(context,selected.lowercase(Locale.US).replace(" ","_")+"_front_$phaseIndex")}
+ LaunchedEffect(selected,phaseIndex){runnerPose=loadPose(context,selected.lowercase(Locale.US).replace(" ","_")+"_front_$phaseIndex",referencePose(selected,phaseIndex,"FRONT"))}
  val ex=gymExercises.firstOrNull{it.name==selected}?:gymExercises.first()
  Panel {
   Eyebrow("LIVE WORKOUT CONSOLE")
