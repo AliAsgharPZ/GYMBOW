@@ -30,11 +30,11 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import java.util.Locale
 
-private val ink=Color(0xFF111111)
-private val muted=Color(0xFF77777A)
-private val cloud=Color(0xFFF5F5F5)
-private val line=Color(0xFFE5E5E5)
-private val paper=Color.White
+val ink=Color(0xFF111111)
+val muted=Color(0xFF77777A)
+val cloud=Color(0xFFF5F5F5)
+val line=Color(0xFFE5E5E5)
+val paper=Color.White
 private enum class Tab(val title:String){HOME("Home"),MOVE("Move"),TRAIN("Training"),FOOD("Nutrition"),REST("Recovery"),PROGRESS("Progress")}
 private data class Food(val name:String,val kcal:Int,val protein:Double,val carbs:Double,val fat:Double,val grams:Int)
 private val catalog=listOf(Food("Whole egg",143,12.6,.7,9.5,100),Food("Chicken breast",165,31.0,0.0,3.6,100),Food("Cooked white rice",130,2.7,28.2,.3,100),Food("Whole milk",61,3.2,4.8,3.3,100),Food("Lentils, cooked",116,9.0,20.0,.4,100),Food("Banana",89,1.1,22.8,.3,100),Food("Greek yogurt",97,9.0,3.9,5.0,100),Food("Oats, dry",379,13.2,67.7,6.8,100))
@@ -83,11 +83,11 @@ class MainActivity:ComponentActivity(){
  if(addFood) AlertDialog(onDismissRequest={addFood=false},title={Text("ADD TO YOUR DIARY",fontWeight=FontWeight.Black)},text={LazyColumn(Modifier.heightIn(max=300.dp)){items(catalog){f->TextButton(onClick={foods=foods+f;addFood=false},modifier=Modifier.fillMaxWidth()){Column(Modifier.fillMaxWidth()){Text(f.name,color=ink,fontWeight=FontWeight.Bold);Text(f.kcal.toString()+" kcal / 100 g",fontSize=10.sp,color=muted)}}}}},confirmButton={TextButton(onClick={addFood=false}){Text("CLOSE",color=ink)}})
 }
 
-@Composable private fun Page(padding:PaddingValues,content:@Composable ColumnScope.()->Unit){LazyColumn(Modifier.fillMaxSize().padding(padding),contentPadding=PaddingValues(18.dp),verticalArrangement=Arrangement.spacedBy(13.dp)){item{Column(verticalArrangement=Arrangement.spacedBy(13.dp),content=content)}}}
-@Composable private fun Heading(kicker:String,title:String,subtitle:String){Column(verticalArrangement=Arrangement.spacedBy(6.dp)){Eyebrow(kicker);Text(title,fontSize=35.sp,lineHeight=36.sp,fontWeight=FontWeight.Black,letterSpacing=(-1.3).sp,color=ink);Text(subtitle,fontSize=12.sp,lineHeight=18.sp,color=muted)}}
-@Composable private fun Eyebrow(text:String,color:Color=muted){Text(text.uppercase(Locale.US),fontSize=9.sp,fontWeight=FontWeight.Bold,letterSpacing=1.2.sp,color=color)}
-@Composable private fun Panel(content:@Composable ColumnScope.()->Unit){Card(shape=RoundedCornerShape(4.dp),colors=CardDefaults.cardColors(containerColor=paper),border=BorderStroke(1.dp,line)){Column(Modifier.padding(15.dp),verticalArrangement=Arrangement.spacedBy(9.dp),content=content)}}
-@Composable private fun Metric(label:String,value:String,unit:String,progress:Float,caption:String){Panel{Eyebrow(label);Row(verticalAlignment=Alignment.Bottom){Text(value,fontSize=30.sp,fontWeight=FontWeight.Black,color=ink);Text(" "+unit,fontSize=10.sp,color=muted,modifier=Modifier.padding(bottom=5.dp))};LinearProgressIndicator(progress={progress.coerceIn(0f,1f)},modifier=Modifier.fillMaxWidth().height(4.dp),color=ink,trackColor=cloud);Text(caption,fontSize=10.sp,color=muted)}}
-@Composable private fun DarkButton(label:String,onClick:()->Unit){Button(onClick,shape=RoundedCornerShape(3.dp),colors=ButtonDefaults.buttonColors(containerColor=ink,contentColor=paper),contentPadding=PaddingValues(horizontal=13.dp,vertical=7.dp)){Text(label,fontSize=9.sp,fontWeight=FontWeight.Bold,letterSpacing=.4.sp)}}
-@Composable private fun LightButton(label:String,onClick:()->Unit){OutlinedButton(onClick,shape=RoundedCornerShape(3.dp),border=BorderStroke(1.dp,line),contentPadding=PaddingValues(horizontal=11.dp,vertical=7.dp)){Text(label,fontSize=9.sp,fontWeight=FontWeight.Bold,color=ink)}}
+@Composable fun Page(padding:PaddingValues,content:@Composable ColumnScope.()->Unit){LazyColumn(Modifier.fillMaxSize().padding(padding),contentPadding=PaddingValues(18.dp),verticalArrangement=Arrangement.spacedBy(13.dp)){item{Column(verticalArrangement=Arrangement.spacedBy(13.dp),content=content)}}}
+@Composable fun Heading(kicker:String,title:String,subtitle:String){Column(verticalArrangement=Arrangement.spacedBy(6.dp)){Eyebrow(kicker);Text(title,fontSize=35.sp,lineHeight=36.sp,fontWeight=FontWeight.Black,letterSpacing=(-1.3).sp,color=ink);Text(subtitle,fontSize=12.sp,lineHeight=18.sp,color=muted)}}
+@Composable fun Eyebrow(text:String,color:Color=muted){Text(text.uppercase(Locale.US),fontSize=9.sp,fontWeight=FontWeight.Bold,letterSpacing=1.2.sp,color=color)}
+@Composable fun Panel(content:@Composable ColumnScope.()->Unit){Card(shape=RoundedCornerShape(4.dp),colors=CardDefaults.cardColors(containerColor=paper),border=BorderStroke(1.dp,line)){Column(Modifier.padding(15.dp),verticalArrangement=Arrangement.spacedBy(9.dp),content=content)}}
+@Composable fun Metric(label:String,value:String,unit:String,progress:Float,caption:String){Panel{Eyebrow(label);Row(verticalAlignment=Alignment.Bottom){Text(value,fontSize=30.sp,fontWeight=FontWeight.Black,color=ink);Text(" "+unit,fontSize=10.sp,color=muted,modifier=Modifier.padding(bottom=5.dp))};LinearProgressIndicator(progress={progress.coerceIn(0f,1f)},modifier=Modifier.fillMaxWidth().height(4.dp),color=ink,trackColor=cloud);Text(caption,fontSize=10.sp,color=muted)}}
+@Composable fun DarkButton(label:String,onClick:()->Unit){Button(onClick,shape=RoundedCornerShape(3.dp),colors=ButtonDefaults.buttonColors(containerColor=ink,contentColor=paper),contentPadding=PaddingValues(horizontal=13.dp,vertical=7.dp)){Text(label,fontSize=9.sp,fontWeight=FontWeight.Bold,letterSpacing=.4.sp)}}
+@Composable fun LightButton(label:String,onClick:()->Unit){OutlinedButton(onClick,shape=RoundedCornerShape(3.dp),border=BorderStroke(1.dp,line),contentPadding=PaddingValues(horizontal=11.dp,vertical=7.dp)){Text(label,fontSize=9.sp,fontWeight=FontWeight.Bold,color=ink)}}
 
