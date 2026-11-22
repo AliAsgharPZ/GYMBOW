@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v0.1"
+      - "v0.1.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Type-check and production build
+        run: npm run build
+      - name: Package web build
+        run: |
+          cd dist
+          zip -r ../GYMBOW-web-${GITHUB_REF_NAME}.zip .
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: GYMBOW ${GITHUB_REF_NAME}
+          generate_release_notes: true
+          files: GYMBOW-web-${GITHUB_REF_NAME}.zip
