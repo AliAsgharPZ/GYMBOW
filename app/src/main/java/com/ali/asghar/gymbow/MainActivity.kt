@@ -166,13 +166,13 @@ class MainActivity:ComponentActivity(){
 }
 
 @Composable private fun PoseReadout(points:List<PosePoint>){
- val angleItems=listOf("LEFT ELBOW" to Triple(11,13,15),"RIGHT ELBOW" to Triple(12,14,16),"LEFT KNEE" to Triple(23,25,27),"RIGHT KNEE" to Triple(24,26,28),"LEFT HIP" to Triple(11,23,25),"RIGHT HIP" to Triple(12,24,26))
+ val angleItems=listOf("LEFT SHOULDER" to Triple(13,11,23),"RIGHT SHOULDER" to Triple(14,12,24),"LEFT ELBOW" to Triple(11,13,15),"RIGHT ELBOW" to Triple(12,14,16),"LEFT HIP" to Triple(11,23,25),"RIGHT HIP" to Triple(12,24,26),"LEFT KNEE" to Triple(23,25,27),"RIGHT KNEE" to Triple(24,26,28),"LEFT ANKLE" to Triple(25,27,31),"RIGHT ANKLE" to Triple(26,28,32))
  Panel{
   Eyebrow("LIVE JOINT ANGLES")
   angleItems.forEach{(label,ids)->
    val angle=if(points.size>ids.third) PoseMath.angle(points[ids.first],points[ids.second],points[ids.third]) else 0
    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(label,fontSize=10.sp,fontWeight=FontWeight.Bold);Text("$angle°",fontSize=12.sp,fontWeight=FontWeight.Black)}
   }
-  Text("33/33 pose landmarks received · 2D image-plane angles",fontSize=9.sp,color=muted)
+  Text("33/33 pose landmarks · 3D world-space joint angles",fontSize=9.sp,color=muted)
  }
 }
