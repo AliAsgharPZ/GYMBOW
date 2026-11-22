@@ -9,9 +9,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -28,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,6 +41,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
 import java.util.Locale
+import java.util.concurrent.Executors
 
 private val ink=Color(0xFF111111)
 private val muted=Color(0xFF77777A)
@@ -104,6 +109,8 @@ class MainActivity:ComponentActivity(){
  var granted by remember{mutableStateOf(ContextCompat.checkSelfPermission(context,Manifest.permission.CAMERA)==PackageManager.PERMISSION_GRANTED)}
  var cameraOn by rememberSaveable{mutableStateOf(false)}
  var exercise by rememberSaveable{mutableStateOf("Barbell squat")}
+ var posePoints by remember { mutableStateOf(emptyList<PosePoint>()) }
+ var poseError by remember { mutableStateOf("") }
  val permission=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){granted=it;cameraOn=it}
  Page(PaddingValues(0.dp)){
   Heading("BIOMECHANICS · FULL BODY TRACKING","MOVE WITH\nPRECISION.","Native camera workspace for movement capture.")
@@ -117,7 +124,8 @@ class MainActivity:ComponentActivity(){
    }
   }
   if(cameraOn&&granted){
-   CameraPreview(Modifier.fillMaxWidth().height(360.dp))
+   CameraPreview(Modifier.fillMaxWidth().height(360.dp),onPose={posePoints=it},onError={poseError=it})
+   if(posePoints.size==33) PoseReadout(posePoints) else if(poseError.isNotBlank()) Text(poseError,fontSize=10.sp,color=muted)
    DarkButton("STOP CAMERA"){cameraOn=false}
   }else{
    Box(Modifier.fillMaxWidth().height(245.dp).clip(RoundedCornerShape(4.dp)).background(ink),contentAlignment=Alignment.Center){
@@ -131,14 +139,40 @@ class MainActivity:ComponentActivity(){
   }
   Panel{
    Eyebrow("POSE ESTIMATION")
-   Text("33 LANDMARK TRACKING",fontSize=18.sp,fontWeight=FontWeight.Black)
-   Text("CameraX preview is native. The MediaPipe landmark inference, joint-angle inspector and keyframe export from the web edition still need their Android implementation; this build does not claim pose detection is already active.",fontSize=10.sp,lineHeight=16.sp,color=muted)
+   Text("33 LANDMARKS · ON-DEVICE INFERENCE",fontSize=18.sp,fontWeight=FontWeight.Black)
+   Text("The full-body MediaPipe model runs locally on the device. No camera frames are uploaded.",fontSize=10.sp,lineHeight=16.sp,color=muted)
   }
  }
 }
 
-@Composable private fun CameraPreview(modifier:Modifier){
+@Composable private fun CameraPreview(modifier:Modifier,onPose:(List<PosePoint>)->Unit,onError:(String)->Unit){
  val context=LocalContext.current
  val owner=androidx.lifecycle.compose.LocalLifecycleOwner.current
- AndroidView(modifier=modifier,factory={ctx->val view=PreviewView(ctx);val future=ProcessCameraProvider.getInstance(ctx);future.addListener({val provider=future.get();val preview=Preview.Builder().build().also{it.surfaceProvider=view.surfaceProvider};try{provider.unbindAll();provider.bindToLifecycle(owner,CameraSelector.DEFAULT_FRONT_CAMERA,preview)}catch(_:Exception){}},ContextCompat.getMainExecutor(ctx));view})
+ val executor=remember{Executors.newSingleThreadExecutor()}
+ DisposableEffect(Unit){onDispose{executor.shutdown()}}
+ AndroidView(modifier=modifier,factory={ctx->
+  val view=PreviewView(ctx)
+  val future=ProcessCameraProvider.getInstance(ctx)
+  future.addListener({
+   val provider=future.get()
+   val preview=Preview.Builder().build().also{it.surfaceProvider=view.surfaceProvider}
+   val analysis=ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build()
+   val pose=try{NativePoseAnalyzer(ctx,onPose,onError)}catch(t:Throwable){onError(t.message?: "Pose model unavailable");null}
+   if(pose!=null) analysis.setAnalyzer(executor,pose)
+   try{provider.unbindAll();provider.bindToLifecycle(owner,CameraSelector.DEFAULT_FRONT_CAMERA,preview,analysis)}catch(t:Exception){onError(t.message?: "Camera unavailable")}
+  },ContextCompat.getMainExecutor(ctx))
+  view
+ })
+}
+
+@Composable private fun PoseReadout(points:List<PosePoint>){
+ val angleItems=listOf("LEFT ELBOW" to Triple(11,13,15),"RIGHT ELBOW" to Triple(12,14,16),"LEFT KNEE" to Triple(23,25,27),"RIGHT KNEE" to Triple(24,26,28),"LEFT HIP" to Triple(11,23,25),"RIGHT HIP" to Triple(12,24,26))
+ Panel{
+  Eyebrow("LIVE JOINT ANGLES")
+  angleItems.forEach{(label,ids)->
+   val angle=if(points.size>ids.third) PoseMath.angle(points[ids.first],points[ids.second],points[ids.third]) else 0
+   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(label,fontSize=10.sp,fontWeight=FontWeight.Bold);Text("$angle°",fontSize=12.sp,fontWeight=FontWeight.Black)}
+  }
+  Text("33/33 pose landmarks received · 2D image-plane angles",fontSize=9.sp,color=muted)
+ }
 }
