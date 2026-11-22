@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
@@ -227,6 +228,7 @@ private fun poseAngle(points:List<Joint>,a:String,b:String,c:String):Int{
 
 @Composable private fun StatPill(label:String){Surface(color=cloud,shape=RoundedCornerShape(30.dp)){Text(label,Modifier.padding(horizontal=10.dp,vertical=6.dp),fontSize=8.sp,fontWeight=FontWeight.Bold,color=ink)}}
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable fun WorkoutRunnerPanel(context:Context){
  var active by rememberSaveable{mutableStateOf(false)}
  var running by rememberSaveable{mutableStateOf(false)}
