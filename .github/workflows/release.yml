@@ -17,19 +17,48 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install dependencies
         run: npm install
-      - name: Type-check and production build
+
+      - name: Build web application
         run: npm run build
+
+      - name: Generate Android project
+        run: npx cap add android
+
+      - name: Configure Android camera permission
+        run: node scripts/patch-android-manifest.mjs
+
+      - name: Sync Capacitor assets
+        run: npx cap sync android
+
+      - name: Build Android APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
       - name: Package web build
         run: |
           cd dist
           zip -r ../GYMBOW-web-v0.1.zip .
-      - name: Publish GitHub Release
+
+      - name: Publish web and Android builds
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v0.1
@@ -37,4 +66,7 @@ jobs:
           name: GYMBOW v0.1
           generate_release_notes: true
           make_latest: true
-          files: GYMBOW-web-v0.1.zip
+          overwrite_files: true
+          files: |
+            GYMBOW-web-v0.1.zip
+            android/app/build/outputs/apk/debug/app-debug.apk
