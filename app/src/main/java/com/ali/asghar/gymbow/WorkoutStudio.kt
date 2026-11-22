@@ -194,6 +194,9 @@ private fun poseAngle(points:List<Joint>,a:String,b:String,c:String):Int{
    Text("Drag any joint dot to pose the body. Select a point below for fine adjustment.",fontSize=9.sp,color=muted)
    PoseCanvas(points,selectedJoint,{selectedJoint=it},{updated->points=updated})
    val joint=points.firstOrNull{it.id==selectedJoint}?:points.first()
+   Eyebrow("JOINT ANGLES · MANUAL 2D REFERENCE")
+   val angleRows=listOf("LEFT ELBOW" to Triple("shoulderL","elbowL","wristL"),"RIGHT ELBOW" to Triple("shoulderR","elbowR","wristR"),"LEFT SHOULDER" to Triple("elbowL","shoulderL","hipL"),"RIGHT SHOULDER" to Triple("elbowR","shoulderR","hipR"),"LEFT HIP" to Triple("shoulderL","hipL","kneeL"),"RIGHT HIP" to Triple("shoulderR","hipR","kneeR"),"LEFT KNEE" to Triple("hipL","kneeL","ankleL"),"RIGHT KNEE" to Triple("hipR","kneeR","ankleR"),"LEFT ANKLE" to Triple("kneeL","ankleL","toeL"),"RIGHT ANKLE" to Triple("kneeR","ankleR","toeR"))
+   angleRows.chunked(2).forEach{pair->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){pair.forEach{(label,ids)->val value=poseAngle(points,ids.first,ids.second,ids.third);Column{Text(label,fontSize=8.sp,color=muted);Text("$value°",fontSize=15.sp,fontWeight=FontWeight.Black)}}}}
    Text("SELECTED · ${joint.label}",fontSize=10.sp,fontWeight=FontWeight.Bold)
    Text("HORIZONTAL",fontSize=8.sp,color=muted)
    Slider(joint.x,{x->points=points.map{if(it.id==joint.id)it.copy(x=x)else it}},valueRange=.03f.. .97f)
