@@ -85,11 +85,11 @@ private fun referencePose(name:String,phase:Int,view:String):List<Joint>{
  val n=name.lowercase(Locale.US)
  when {
   "squat" in n || "leg press" in n || "hack squat" in n -> {val bend=when(phase){0->0f;1->.10f;2->.20f;else->.08f};set("hipL",y=.48f+bend);set("hipR",y=.48f+bend);set("kneeL",x=.38f,y=.68f+bend*.55f);set("kneeR",x=.62f,y=.68f+bend*.55f);set("ankleL",x=.34f);set("ankleR",x=.66f);set("elbowL",x=.32f,y=.28f+bend*.3f);set("elbowR",x=.68f,y=.28f+bend*.3f)}
-  "deadlift" in n || "romanian" in n -> {val hinge=if(phase==0||phase==3)0f else if(phase==1).18f else .25f;set("neck",x=.50f-hinge,y=.18f+hinge*.5f);set("head",x=.50f-hinge*1.2f,y=.10f+hinge*.6f);set("shoulderL",x=.39f-hinge,y=.24f+hinge);set("shoulderR",x=.61f-hinge,y=.24f+hinge);set("elbowL",x=.37f-hinge,y=.40f+hinge);set("elbowR",x=.63f-hinge,y=.40f+hinge);set("wristL",x=.42f-hinge,y=.53f+hinge);set("wristR",x=.58f-hinge,y=.53f+hinge);set("hipL",y=.48f);set("hipR",y=.48f);set("kneeL",y=.68f-hinge*.25f);set("kneeR",y=.68f-hinge*.25f)}
-  "bench" in n || "chest press" in n || "push-up" in n -> {set("head",x=.12f,y=.43f);set("neck",x=.22f,y=.43f);set("shoulderL",x=.30f,y=.40f);set("shoulderR",x=.30f,y=.46f);set("elbowL",x=.40f,y=if(phase==0||phase==3).30f else .56f);set("elbowR",x=.40f,y=if(phase==0||phase==3).56f else .30f);set("wristL",x=.51f,y=.30f);set("wristR",x=.51f,y=.56f);set("hipL",x=.65f,y=.43f);set("hipR",x=.65f,y=.45f);set("kneeL",x=.80f,y=.34f);set("kneeR",x=.80f,y=.50f);set("ankleL",x=.94f,y=.34f);set("ankleR",x=.94f,y=.50f)}
-  "overhead" in n -> {set("elbowL",x=.37f,y=if(phase==0).32f else .10f);set("elbowR",x=.63f,y=if(phase==0).32f else .10f);set("wristL",x=.37f,y=if(phase==0).22f else .03f);set("wristR",x=.63f,y=if(phase==0).22f else .03f)}
-  "curl" in n || "pushdown" in n -> {val raised=phase==1||phase==2;set("elbowL",x=.35f,y=.34f);set("elbowR",x=.65f,y=.34f);set("wristL",x=if(raised).40f else .28f,y=if(raised).28f else .46f);set("wristR",x=if(raised).60f else .72f,y=if(raised).28f else .46f)}
-  "lat pulldown" in n || "pull-up" in n -> {val pull=phase==1||phase==2;set("elbowL",x=if(pull).34f else .25f,y=if(pull).35f else .20f);set("elbowR",x=if(pull).66f else .75f,y=if(pull).35f else .20f);set("wristL",x=.40f,y=if(pull).40f else .02f);set("wristR",x=.60f,y=if(pull).40f else .02f)}
+  "deadlift" in n || "romanian" in n -> {val hinge=if(phase==0||phase==3)0f else if(phase==1) .18f else .25f;set("neck",x=.50f-hinge,y=.18f+hinge*.5f);set("head",x=.50f-hinge*1.2f,y=.10f+hinge*.6f);set("shoulderL",x=.39f-hinge,y=.24f+hinge);set("shoulderR",x=.61f-hinge,y=.24f+hinge);set("elbowL",x=.37f-hinge,y=.40f+hinge);set("elbowR",x=.63f-hinge,y=.40f+hinge);set("wristL",x=.42f-hinge,y=.53f+hinge);set("wristR",x=.58f-hinge,y=.53f+hinge);set("hipL",y=.48f);set("hipR",y=.48f);set("kneeL",y=.68f-hinge*.25f);set("kneeR",y=.68f-hinge*.25f)}
+  "bench" in n || "chest press" in n || "push-up" in n -> {set("head",x=.12f,y=.43f);set("neck",x=.22f,y=.43f);set("shoulderL",x=.30f,y=.40f);set("shoulderR",x=.30f,y=.46f);set("elbowL",x=.40f,y=if(phase==0||phase==3) .30f else .56f);set("elbowR",x=.40f,y=if(phase==0||phase==3) .56f else .30f);set("wristL",x=.51f,y=.30f);set("wristR",x=.51f,y=.56f);set("hipL",x=.65f,y=.43f);set("hipR",x=.65f,y=.45f);set("kneeL",x=.80f,y=.34f);set("kneeR",x=.80f,y=.50f);set("ankleL",x=.94f,y=.34f);set("ankleR",x=.94f,y=.50f)}
+  "overhead" in n -> {set("elbowL",x=.37f,y=if(phase==0) .32f else .10f);set("elbowR",x=.63f,y=if(phase==0).32f else .10f);set("wristL",x=.37f,y=if(phase==0) .22f else .03f);set("wristR",x=.63f,y=if(phase==0).22f else .03f)}
+  "curl" in n || "pushdown" in n -> {val raised=phase==1||phase==2;set("elbowL",x=.35f,y=.34f);set("elbowR",x=.65f,y=.34f);set("wristL",x=if(raised) .40f else .28f,y=if(raised) .28f else .46f);set("wristR",x=if(raised) .60f else .72f,y=if(raised).28f else .46f)}
+  "lat pulldown" in n || "pull-up" in n -> {val pull=phase==1||phase==2;set("elbowL",x=if(pull) .34f else .25f,y=if(pull) .35f else .20f);set("elbowR",x=if(pull) .66f else .75f,y=if(pull).35f else .20f);set("wristL",x=.40f,y=if(pull) .40f else .02f);set("wristR",x=.60f,y=if(pull).40f else .02f)}
  }
  if(view=="BACK")return p.map{it.copy(x=1f-it.x)}
  if(view=="SIDE")return p.map{j->j.copy(x=.5f+(j.x-.5f)*.42f)}
@@ -112,7 +112,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
  var equipment by rememberSaveable{mutableStateOf("All")}
  var view by rememberSaveable{mutableStateOf("FRONT")}
  var phase by rememberSaveable{mutableIntStateOf(0)}
- var points by remember{mutableStateOf(loadPose(ctx,"squat_front_0",referencePose("Barbell squat",0,"FRONT"))}
+ var points by remember{mutableStateOf(loadPose(ctx,"squat_front_0",referencePose("Barbell squat",0,"FRONT"))) }
  var selectedJoint by rememberSaveable{mutableStateOf("kneeL")}
   val equipmentFilters=listOf("All","Barbell","Dumbbells","Machine","Cable","Bodyweight")
  val filtered=gymExercises.filter{(query.isBlank()||it.name.contains(query,true)||it.muscle.contains(query,true))&&(equipment=="All"||it.equipment.contains(equipment,true)||it.category==equipment)}
