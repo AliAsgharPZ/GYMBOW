@@ -1,72 +1,50 @@
-name: Release
+name: Native Android Release
 
 on:
   push:
     branches:
-      - release/v0.1
+      - native/android
     tags:
-      - "v0.1"
+      - "v0.2"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  release:
+  android:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
-
-      - name: Setup Android SDK
+          java-version: "17"
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v4
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build web application
-        run: npm run build
-
-      - name: Generate Android project
-        run: npx cap add android
-
-      - name: Configure Android camera permission
-        run: node scripts/patch-android-manifest.mjs
-
-      - name: Sync Capacitor assets
-        run: npx cap sync android
-
-      - name: Build Android APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-
-      - name: Package web build
-        run: |
-          cd dist
-          zip -r ../GYMBOW-web-v0.1.zip .
-
-      - name: Publish web and Android builds
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Build native APK
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GYMBOW-native-android-v0.2
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - name: Publish native APK
+        if: github.ref == 'refs/heads/native/android' || github.ref == 'refs/tags/v0.2'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1
+          tag_name: v0.2
           target_commitish: ${{ github.sha }}
-          name: GYMBOW v0.1
-          generate_release_notes: true
-          make_latest: true
+          name: GYMBOW Native Android v0.2
+          prerelease: true
           overwrite_files: true
-          files: |
-            GYMBOW-web-v0.1.zip
-            android/app/build/outputs/apk/debug/app-debug.apk
+          files: app/build/outputs/apk/debug/app-debug.apk
