@@ -68,16 +68,31 @@ private val baseJoints = listOf(
  Joint("elbowL","Left elbow",.33f,.34f),Joint("elbowR","Right elbow",.67f,.34f),Joint("wristL","Left wrist",.28f,.46f),Joint("wristR","Right wrist",.72f,.46f),
  Joint("hipL","Left hip",.44f,.48f),Joint("hipR","Right hip",.56f,.48f),Joint("kneeL","Left knee",.43f,.68f),Joint("kneeR","Right knee",.57f,.68f),
  Joint("ankleL","Left ankle",.42f,.87f),Joint("ankleR","Right ankle",.58f,.87f),Joint("heelL","Left heel",.39f,.91f),Joint("heelR","Right heel",.61f,.91f),
- Joint("toeL","Left toe",.34f,.94f),Joint("toeR","Right toe",.66f,.94f),
- Joint("thumbL1","L thumb base",.25f,.45f),Joint("thumbL2","L thumb tip",.23f,.43f),Joint("indexL1","L index base",.26f,.48f),Joint("indexL2","L index tip",.24f,.51f),
- Joint("middleL1","L middle base",.28f,.49f),Joint("middleL2","L middle tip",.28f,.53f),Joint("ringL1","L ring base",.30f,.49f),Joint("ringL2","L ring tip",.31f,.52f),Joint("pinkyL1","L pinky base",.32f,.48f),Joint("pinkyL2","L pinky tip",.34f,.50f),
- Joint("thumbR1","R thumb base",.75f,.45f),Joint("thumbRm","R thumb middle",.76f,.44f),Joint("thumbR2","R thumb tip",.77f,.43f),Joint("indexR1","R index base",.74f,.48f),Joint("indexRm","R index middle",.75f,.50f),Joint("indexR2","R index tip",.76f,.51f),
- Joint("middleR1","R middle base",.72f,.49f),Joint("middleRm","R middle middle",.72f,.51f),Joint("middleR2","R middle tip",.72f,.53f),Joint("ringR1","R ring base",.70f,.49f),Joint("ringRm","R ring middle",.695f,.51f),Joint("ringR2","R ring tip",.69f,.52f),Joint("pinkyR1","R pinky base",.68f,.48f),Joint("pinkyRm","R pinky middle",.67f,.49f),Joint("pinkyR2","R pinky tip",.66f,.50f),
- Joint("toeL1","L big toe base",.35f,.93f),Joint("toeL2","L big toe tip",.31f,.95f),Joint("toeL3","L toe tips",.36f,.95f),Joint("toeR1","R big toe base",.65f,.93f),Joint("toeR2","R big toe tip",.69f,.95f),Joint("toeR3","R toe tips",.64f,.95f)
+ Joint("toeL","Left foot toe",.34f,.94f),Joint("toeR","Right foot toe",.66f,.94f),
+ Joint("thumbL1","L thumb base",.25f,.45f),Joint("thumbLm","L thumb middle",.24f,.44f),Joint("thumbL2","L thumb tip",.23f,.43f),
+ Joint("indexL1","L index base",.26f,.48f),Joint("indexLm","L index middle",.25f,.50f),Joint("indexL2","L index tip",.24f,.51f),
+ Joint("middleL1","L middle base",.28f,.49f),Joint("middleLm","L middle middle",.28f,.51f),Joint("middleL2","L middle tip",.28f,.53f),
+ Joint("ringL1","L ring base",.30f,.49f),Joint("ringLm","L ring middle",.305f,.51f),Joint("ringL2","L ring tip",.31f,.52f),
+ Joint("pinkyL1","L pinky base",.32f,.48f),Joint("pinkyLm","L pinky middle",.33f,.49f),Joint("pinkyL2","L pinky tip",.34f,.50f),
+ Joint("thumbR1","R thumb base",.75f,.45f),Joint("thumbRm","R thumb middle",.76f,.44f),Joint("thumbR2","R thumb tip",.77f,.43f),
+ Joint("indexR1","R index base",.74f,.48f),Joint("indexRm","R index middle",.75f,.50f),Joint("indexR2","R index tip",.76f,.51f),
+ Joint("middleR1","R middle base",.72f,.49f),Joint("middleRm","R middle middle",.72f,.51f),Joint("middleR2","R middle tip",.72f,.53f),
+ Joint("ringR1","R ring base",.70f,.49f),Joint("ringRm","R ring middle",.695f,.51f),Joint("ringR2","R ring tip",.69f,.52f),
+ Joint("pinkyR1","R pinky base",.68f,.48f),Joint("pinkyRm","R pinky middle",.67f,.49f),Joint("pinkyR2","R pinky tip",.66f,.50f),
+ Joint("toeL1","L big toe base",.35f,.93f),Joint("toeL2","L big toe tip",.31f,.95f),Joint("toeL3","L outer toe tip",.36f,.95f),
+ Joint("toeR1","R big toe base",.65f,.93f),Joint("toeR2","R big toe tip",.69f,.95f),Joint("toeR3","R outer toe tip",.64f,.95f)
 )
-private val bones = listOf("head" to "neck","neck" to "shoulderL","neck" to "shoulderR","shoulderL" to "elbowL","elbowL" to "wristL","shoulderR" to "elbowR","elbowR" to "wristR","shoulderL" to "hipL","shoulderR" to "hipR","hipL" to "hipR","hipL" to "kneeL","kneeL" to "ankleL","ankleL" to "heelL","heelL" to "toeL","hipR" to "kneeR","kneeR" to "ankleR","ankleR" to "heelR","heelR" to "toeR",
- "wristL" to "thumbL1","thumbL1" to "thumbLm","thumbLm" to "thumbL2","wristL" to "indexL1","indexL1" to "indexLm","indexLm" to "indexL2","wristL" to "middleL1","middleL1" to "middleLm","middleLm" to "middleL2","wristL" to "ringL1","ringL1" to "ringLm","ringLm" to "ringL2","wristL" to "pinkyL1","pinkyL1" to "pinkyLm","pinkyLm" to "pinkyL2",
- "wristR" to "thumbR1","thumbR1" to "thumbRm","thumbRm" to "thumbR2","wristR" to "indexR1","indexR1" to "indexRm","indexRm" to "indexR2","wristR" to "middleR1","middleR1" to "middleRm","middleRm" to "middleR2","wristR" to "ringR1","ringR1" to "ringRm","ringRm" to "ringR2","wristR" to "pinkyR1","pinkyR1" to "pinkyRm","pinkyRm" to "pinkyR2","toeL" to "toeL1","toeL1" to "toeL2","toeR" to "toeR1","toeR1" to "toeR2")
+private val bones = listOf(
+ "head" to "neck","neck" to "shoulderL","neck" to "shoulderR","shoulderL" to "elbowL","elbowL" to "wristL","shoulderR" to "elbowR","elbowR" to "wristR",
+ "shoulderL" to "hipL","shoulderR" to "hipR","hipL" to "hipR","hipL" to "kneeL","kneeL" to "ankleL","ankleL" to "heelL","heelL" to "toeL",
+ "hipR" to "kneeR","kneeR" to "ankleR","ankleR" to "heelR","heelR" to "toeR",
+ "wristL" to "thumbL1","thumbL1" to "thumbLm","thumbLm" to "thumbL2","wristL" to "indexL1","indexL1" to "indexLm","indexLm" to "indexL2",
+ "wristL" to "middleL1","middleL1" to "middleLm","middleLm" to "middleL2","wristL" to "ringL1","ringL1" to "ringLm","ringLm" to "ringL2",
+ "wristL" to "pinkyL1","pinkyL1" to "pinkyLm","pinkyLm" to "pinkyL2",
+ "wristR" to "thumbR1","thumbR1" to "thumbRm","thumbRm" to "thumbR2","wristR" to "indexR1","indexR1" to "indexRm","indexRm" to "indexR2",
+ "wristR" to "middleR1","middleR1" to "middleRm","middleRm" to "middleR2","wristR" to "ringR1","ringR1" to "ringRm","ringRm" to "ringR2",
+ "wristR" to "pinkyR1","pinkyR1" to "pinkyRm","pinkyRm" to "pinkyR2","toeL" to "toeL1","toeL1" to "toeL2","toeR" to "toeR1","toeR1" to "toeR2"
+)
 
 private fun referencePose(name:String,phase:Int,view:String):List<Joint>{
  val p=baseJoints.toMutableList()
@@ -87,9 +102,9 @@ private fun referencePose(name:String,phase:Int,view:String):List<Joint>{
   "squat" in n || "leg press" in n || "hack squat" in n -> {val bend=when(phase){0->0f;1->.10f;2->.20f;else->.08f};set("hipL",y=.48f+bend);set("hipR",y=.48f+bend);set("kneeL",x=.38f,y=.68f+bend*.55f);set("kneeR",x=.62f,y=.68f+bend*.55f);set("ankleL",x=.34f);set("ankleR",x=.66f);set("elbowL",x=.32f,y=.28f+bend*.3f);set("elbowR",x=.68f,y=.28f+bend*.3f)}
   "deadlift" in n || "romanian" in n -> {val hinge=if(phase==0||phase==3)0f else if(phase==1) .18f else .25f;set("neck",x=.50f-hinge,y=.18f+hinge*.5f);set("head",x=.50f-hinge*1.2f,y=.10f+hinge*.6f);set("shoulderL",x=.39f-hinge,y=.24f+hinge);set("shoulderR",x=.61f-hinge,y=.24f+hinge);set("elbowL",x=.37f-hinge,y=.40f+hinge);set("elbowR",x=.63f-hinge,y=.40f+hinge);set("wristL",x=.42f-hinge,y=.53f+hinge);set("wristR",x=.58f-hinge,y=.53f+hinge);set("hipL",y=.48f);set("hipR",y=.48f);set("kneeL",y=.68f-hinge*.25f);set("kneeR",y=.68f-hinge*.25f)}
   "bench" in n || "chest press" in n || "push-up" in n -> {set("head",x=.12f,y=.43f);set("neck",x=.22f,y=.43f);set("shoulderL",x=.30f,y=.40f);set("shoulderR",x=.30f,y=.46f);set("elbowL",x=.40f,y=if(phase==0||phase==3) .30f else .56f);set("elbowR",x=.40f,y=if(phase==0||phase==3) .56f else .30f);set("wristL",x=.51f,y=.30f);set("wristR",x=.51f,y=.56f);set("hipL",x=.65f,y=.43f);set("hipR",x=.65f,y=.45f);set("kneeL",x=.80f,y=.34f);set("kneeR",x=.80f,y=.50f);set("ankleL",x=.94f,y=.34f);set("ankleR",x=.94f,y=.50f)}
-  "overhead" in n -> {set("elbowL",x=.37f,y=if(phase==0) .32f else .10f);set("elbowR",x=.63f,y=if(phase==0).32f else .10f);set("wristL",x=.37f,y=if(phase==0) .22f else .03f);set("wristR",x=.63f,y=if(phase==0).22f else .03f)}
-  "curl" in n || "pushdown" in n -> {val raised=phase==1||phase==2;set("elbowL",x=.35f,y=.34f);set("elbowR",x=.65f,y=.34f);set("wristL",x=if(raised) .40f else .28f,y=if(raised) .28f else .46f);set("wristR",x=if(raised) .60f else .72f,y=if(raised).28f else .46f)}
-  "lat pulldown" in n || "pull-up" in n -> {val pull=phase==1||phase==2;set("elbowL",x=if(pull) .34f else .25f,y=if(pull) .35f else .20f);set("elbowR",x=if(pull) .66f else .75f,y=if(pull).35f else .20f);set("wristL",x=.40f,y=if(pull) .40f else .02f);set("wristR",x=.60f,y=if(pull).40f else .02f)}
+  "overhead" in n -> {set("elbowL",x=.37f,y=if(phase==0) .32f else .10f);set("elbowR",x=.63f,y=if(phase==0) .32f else .10f);set("wristL",x=.37f,y=if(phase==0) .22f else .03f);set("wristR",x=.63f,y=if(phase==0) .22f else .03f)}
+  "curl" in n || "pushdown" in n -> {val raised=phase==1||phase==2;set("elbowL",x=.35f,y=.34f);set("elbowR",x=.65f,y=.34f);set("wristL",x=if(raised) .40f else .28f,y=if(raised) .28f else .46f);set("wristR",x=if(raised) .60f else .72f,y=if(raised) .28f else .46f)}
+  "lat pulldown" in n || "pull-up" in n -> {val pull=phase==1||phase==2;set("elbowL",x=if(pull) .34f else .25f,y=if(pull) .35f else .20f);set("elbowR",x=if(pull) .66f else .75f,y=if(pull) .35f else .20f);set("wristL",x=.40f,y=if(pull) .40f else .02f);set("wristR",x=.60f,y=if(pull) .40f else .02f)}
  }
  if(view=="BACK")return p.map{it.copy(x=1f-it.x)}
  if(view=="SIDE")return p.map{j->j.copy(x=.5f+(j.x-.5f)*.42f)}
