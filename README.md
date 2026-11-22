@@ -27,6 +27,10 @@ npm run build
 npm run preview
 ```
 
+## CI and releases
+
+Every push to `main` runs the strict TypeScript check and Vite production build. Pushing a `v0.1` or `v0.1.*` tag runs the release workflow, rebuilds the app, packages the `dist/` output as a ZIP, and publishes a GitHub Release.
+
 ## Stack
 
 React 18 · TypeScript · Vite · Lucide · CSS · local-first browser persistence.
