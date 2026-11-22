@@ -5,7 +5,7 @@ on:
     branches:
       - native/android
     tags:
-      - "v0.2"
+      - "v0.3"
   workflow_dispatch:
 
 permissions:
@@ -30,21 +30,25 @@ jobs:
           gradle-version: "8.11.1"
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Download offline pose model
+        run: |
+          mkdir -p app/src/main/assets
+          curl -fL --retry 3 "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task" -o app/src/main/assets/pose_landmarker_full.task
       - name: Build native APK
         run: gradle --no-daemon :app:assembleDebug
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GYMBOW-native-android-v0.2
+          name: GYMBOW-native-android-v0.3
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - name: Publish native APK
-        if: github.ref == 'refs/heads/native/android' || github.ref == 'refs/tags/v0.2'
+        if: github.ref == 'refs/heads/native/android' || github.ref == 'refs/tags/v0.3'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.2
+          tag_name: v0.3
           target_commitish: ${{ github.sha }}
-          name: GYMBOW Native Android v0.2
+          name: GYMBOW Native Android v0.3
           prerelease: true
           overwrite_files: true
           files: app/build/outputs/apk/debug/app-debug.apk
