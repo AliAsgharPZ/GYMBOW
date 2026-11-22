@@ -35,7 +35,7 @@ class NativePoseAnalyzer(
             .setMinTrackingConfidence(0.55f)
             .setResultListener { result, _ ->
                 busy.set(false)
-                val pose = result.landmarks().firstOrNull().orEmpty().map { p ->
+                val pose = result.worldLandmarks().firstOrNull().orEmpty().map { p ->
                     PosePoint(p.x(), p.y(), p.z(), p.visibility().orElse(0f))
                 }
                 onPose(pose)
@@ -79,10 +79,12 @@ object PoseMath {
     fun angle(a: PosePoint, b: PosePoint, c: PosePoint): Int {
         val abx = a.x - b.x
         val aby = a.y - b.y
+        val abz = a.z - b.z
         val cbx = c.x - b.x
         val cby = c.y - b.y
-        val dot = abx * cbx + aby * cby
-        val mag = kotlin.math.sqrt((abx * abx + aby * aby) * (cbx * cbx + cby * cby))
+        val cbz = c.z - b.z
+        val dot = abx * cbx + aby * cby + abz * cbz
+        val mag = kotlin.math.sqrt((abx * abx + aby * aby + abz * abz) * (cbx * cbx + cby * cby + cbz * cbz))
         if (mag <= 1e-6f) return 0
         return Math.toDegrees(kotlin.math.acos((dot / mag).coerceIn(-1f, 1f)).toDouble()).toInt()
     }
