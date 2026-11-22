@@ -98,8 +98,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
  var phase by rememberSaveable{mutableIntStateOf(0)}
  var points by remember{mutableStateOf(loadPose(ctx,"squat_front"))}
  var selectedJoint by rememberSaveable{mutableStateOf("kneeL")}
- var showDetails by remember{mutableStateOf(true)}
- val equipmentFilters=listOf("All","Barbell","Dumbbells","Machine","Cable","Bodyweight")
+  val equipmentFilters=listOf("All","Barbell","Dumbbells","Machine","Cable","Bodyweight")
  val filtered=gymExercises.filter{(query.isBlank()||it.name.contains(query,true)||it.muscle.contains(query,true))&&(equipment=="All"||it.equipment.contains(equipment,true)||it.category==equipment)}
  LazyColumn(Modifier.fillMaxSize(),contentPadding=PaddingValues(18.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
   item { Column(verticalArrangement=Arrangement.spacedBy(6.dp)){Eyebrow("MOVEMENT LAB · MANUAL BIOMECHANICS");Text("BUILD THE\nPERFECT REP.",fontSize=34.sp,lineHeight=35.sp,fontWeight=FontWeight.Black);Text("Exercise library, equipment setup and adjustable reference poses. No camera required.",fontSize=11.sp,color=muted)} }
@@ -127,8 +126,8 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
   item { Panel {
    Eyebrow("MANUAL POSE STUDIO · ${baseJoints.size} ARTICULATION POINTS")
    Text("REFERENCE POSITION",fontSize=19.sp,fontWeight=FontWeight.Black)
-   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){listOf("FRONT","SIDE","BACK").forEach{v->FilterChip(selected=view==v,onClick={view=v;points=loadPose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${v.lowercase()}")},label={Text(v,fontSize=9.sp)})}}
-   Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){selected.phases.forEachIndexed{i,p->FilterChip(selected=phase==i,onClick={phase=i},label={Text(p,fontSize=8.sp)})}}
+   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){listOf("FRONT","SIDE","BACK").forEach{v->FilterChip(selected=view==v,onClick={view=v;points=loadPose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${v.lowercase()}_$phase")},label={Text(v,fontSize=9.sp)})}}
+   Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){selected.phases.forEachIndexed{i,p->FilterChip(selected=phase==i,onClick={phase=i;points=loadPose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${view.lowercase()}_$i")},label={Text(p,fontSize=8.sp)})}}
    Text("Drag any joint dot to pose the body. Select a point below for fine adjustment.",fontSize=9.sp,color=muted)
    PoseCanvas(points,selectedJoint,{selectedJoint=it},{updated->points=updated})
    val joint=points.firstOrNull{it.id==selectedJoint}?:points.first()
@@ -137,7 +136,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
    Slider(joint.x,{x->points=points.map{if(it.id==joint.id)it.copy(x=x)else it}},valueRange=.03f.. .97f)
    Text("VERTICAL",fontSize=8.sp,color=muted)
    Slider(joint.y,{y->points=points.map{if(it.id==joint.id)it.copy(y=y)else it}},valueRange=.02f.. .98f)
-   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("SAVE REFERENCE"){savePose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${view.lowercase()}",points)};LightButton("RESET POSE"){points=baseJoints}}
+   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("SAVE REFERENCE"){savePose(ctx,selected.name.lowercase(Locale.US).replace(" ","_")+"_${view.lowercase()}_$phase",points)};LightButton("RESET POSE"){points=baseJoints}}
    Text("Manual reference is a coaching diagram, not a medical motion-capture measurement. Save a separate pose for each exercise phase and camera-free view.",fontSize=9.sp,color=muted)
   } }
   item { Panel {
@@ -148,7 +147,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
 }
 
 @Composable private fun PoseCanvas(points:List<Joint>,selected:String,onSelect:(String)->Unit,onMove:(List<Joint>)->Unit){
- Canvas(Modifier.fillMaxWidth().height(330.dp).pointerInput(points){detectDragGestures(onDragStart={p->val nearest=points.minByOrNull{hypot(it.x*size.width-p.x,it.y*size.height-p.y)};nearest?.let{onSelect(it.id)}},onDrag={change,_->val x=(change.position.x/size.width).coerceIn(.02f,.98f);val y=(change.position.y/size.height).coerceIn(.02f,.98f);val current=points.firstOrNull{it.id==selected};if(current!=null)onMove(points.map{if(it.id==selected)it.copy(x=x,y=y)else it});change.consume()})}){
+ Canvas(Modifier.fillMaxWidth().height(330.dp).pointerInput(points){detectDragGestures(onDragStart={p->val nearest=points.minByOrNull{hypot((it.x*size.width-p.x).toDouble(),(it.y*size.height-p.y).toDouble())};nearest?.let{onSelect(it.id)}},onDrag={change,_->val x=(change.position.x/size.width).coerceIn(.02f,.98f);val y=(change.position.y/size.height).coerceIn(.02f,.98f);val current=points.firstOrNull{it.id==selected};if(current!=null)onMove(points.map{if(it.id==selected)it.copy(x=x,y=y)else it});change.consume()})}){
  val w=size.width;val h=size.height
  drawLine(line,Offset(w*.5f,h*.03f),Offset(w*.5f,h*.97f),1f)
  bones.forEach{(a,b)->val p=points.firstOrNull{it.id==a};val q=points.firstOrNull{it.id==b};if(p!=null&&q!=null)drawLine(ink,Offset(p.x*w,p.y*h),Offset(q.x*w,q.y*h),5f,cap=StrokeCap.Round)}
@@ -163,11 +162,17 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
  var running by rememberSaveable{mutableStateOf(false)}
  var elapsed by rememberSaveable{mutableIntStateOf(0)}
  var rest by rememberSaveable{mutableIntStateOf(90)}
+ var restRunning by rememberSaveable{mutableStateOf(false)}
+ var phaseIndex by rememberSaveable{mutableIntStateOf(0)}
+ var runnerJoint by rememberSaveable{mutableStateOf("kneeL")}
+ var runnerPose by remember{mutableStateOf(baseJoints)}
  var set by rememberSaveable{mutableIntStateOf(1)}
  var reps by rememberSaveable{mutableIntStateOf(0)}
  var weight by rememberSaveable{mutableFloatStateOf(20f)}
  var selected by rememberSaveable{mutableStateOf("Barbell squat")}
  LaunchedEffect(running){while(running){delay(1000);elapsed++}}
+ LaunchedEffect(restRunning){while(restRunning&&rest>0){delay(1000);rest--};if(rest==0)restRunning=false}
+ LaunchedEffect(selected,phaseIndex){runnerPose=loadPose(context,selected.lowercase(Locale.US).replace(" ","_")+"_front_$phaseIndex")}
  val ex=gymExercises.firstOrNull{it.name==selected}?:gymExercises.first()
  Panel {
   Eyebrow("LIVE WORKOUT CONSOLE")
@@ -175,7 +180,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
   var expanded by remember{mutableStateOf(false)}
   ExposedDropdownMenuBox(expanded=expanded,onExpandedChange={expanded=it}){
    OutlinedTextField(value=selected,onValueChange={},readOnly=true,label={Text("Movement")},trailingIcon={ExposedDropdownMenuDefaults.TrailingIcon(expanded)},modifier=Modifier.menuAnchor().fillMaxWidth())
-   ExposedDropdownMenu(expanded=expanded,onDismissRequest={expanded=false}){gymExercises.forEach{e->DropdownMenuItem(text={Text(e.name)},onClick={selected=e.name;set=1;reps=0;expanded=false})}}
+   ExposedDropdownMenu(expanded=expanded,onDismissRequest={expanded=false}){gymExercises.forEach{e->DropdownMenuItem(text={Text(e.name)},onClick={selected=e.name;set=1;reps=0;phaseIndex=0;rest=e.rest;expanded=false})}}
   }
   Text(String.format(Locale.US,"%02d:%02d",elapsed/60,elapsed%60),fontSize=40.sp,fontWeight=FontWeight.Black)
   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton(if(running)"PAUSE TIMER" else "START TIMER"){active=true;running=!running};LightButton("RESET"){elapsed=0;running=false;active=false}}
@@ -183,12 +188,12 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Text("Repetitions",fontSize=12.sp);Row(verticalAlignment=Alignment.CenterVertically){IconButton({reps=(reps-1).coerceAtLeast(0)}){Icon(Icons.Outlined.Remove,null)};Text(reps.toString(),fontSize=22.sp,fontWeight=FontWeight.Black);IconButton({reps++}){Icon(Icons.Outlined.Add,null)}}}
   Text("LOAD · ${weight.toInt()} KG",fontSize=10.sp,fontWeight=FontWeight.Bold)
   Slider(value=weight,onValueChange={weight=it},valueRange=0f..250f)
-  Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("COMPLETE SET"){set++;reps=0;rest=ex.rest};LightButton("START REST"){running=false;rest=ex.rest}}
+  Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("COMPLETE SET"){if(set<ex.sets){set++;reps=0;rest=ex.rest;restRunning=true}else{set=ex.sets;reps=0;restRunning=false}};LightButton("START REST"){running=false;rest=ex.rest;restRunning=true}}
   Text("REST TIMER · ${rest/60}:${(rest%60).toString().padStart(2,'0')}",fontSize=11.sp,fontWeight=FontWeight.Bold)
   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){LightButton("−15 SEC"){rest=(rest-15).coerceAtLeast(0)};LightButton("+15 SEC"){rest+=15}}
   Text("REFERENCE PHASE",fontSize=9.sp,color=muted,fontWeight=FontWeight.Bold)
   Text(ex.phases[(set-1).coerceAtMost(ex.phases.lastIndex)],fontSize=14.sp,fontWeight=FontWeight.Bold)
   Text("Keep the selected movement's pose guide open in Movement Lab while training.",fontSize=9.sp,color=muted)
-  DarkButton("FINISH SESSION"){recordWorkoutSession(context,selected);active=false;running=false;elapsed=0;set=1;reps=0}
+  DarkButton("FINISH SESSION"){recordWorkoutSession(context,selected+" · "+set+" sets · "+weight.toInt()+" kg");active=false;running=false;restRunning=false;elapsed=0;set=1;reps=0}
  }
 }
