@@ -68,13 +68,14 @@ class MainActivity:ComponentActivity(){
  var water by rememberSaveable{mutableIntStateOf(prefs(ctx).getInt("water",4))}
  var sleep by rememberSaveable{mutableFloatStateOf(prefs(ctx).getFloat("sleep",8f))}
  var completed by rememberSaveable{mutableIntStateOf(prefs(ctx).getInt("done",0))}
- var foods by remember{mutableStateOf(listOf(catalog[0].copy(grams=150),catalog[2].copy(grams=250),catalog[3].copy(grams=250)))}
+ var foods by remember{mutableStateOf(prefs(ctx).getString("food_diary",null)?.split("\\n")?.mapNotNull{row->val p=row.split("|");if(p.size==6) runCatching{Food(p[0],p[1].toInt(),p[2].toDouble(),p[3].toDouble(),p[4].toDouble(),p[5].toInt())}.getOrNull() else null} ?: listOf(catalog[0].copy(grams=150),catalog[2].copy(grams=250),catalog[3].copy(grams=250)))}
  var addFood by remember{mutableStateOf(false)}
  var active by rememberSaveable{mutableStateOf("")}
  var seconds by rememberSaveable{mutableIntStateOf(0)}
  var timer by rememberSaveable{mutableStateOf(false)}
  LaunchedEffect(timer){while(timer){delay(1000);seconds++}}
  LaunchedEffect(weight,water,sleep,completed){prefs(ctx).edit().putFloat("weight",weight).putInt("water",water).putFloat("sleep",sleep).putInt("done",completed).apply()}
+ LaunchedEffect(foods){prefs(ctx).edit().putString("food_diary",foods.joinToString("\\n"){"${it.name}|${it.kcal}|${it.protein}|${it.carbs}|${it.fat}|${it.grams}"}).apply()}
  val kcal=foods.sumOf{it.kcal*it.grams/100.0}
  val protein=foods.sumOf{it.protein*it.grams/100.0}
  Scaffold(containerColor=cloud,topBar={TopAppBar(title={Row{Text("GYM",fontWeight=FontWeight.Black,letterSpacing=(-1).sp);Text("BOW",fontWeight=FontWeight.Light,letterSpacing=(-1).sp)}},actions={Row(verticalAlignment=Alignment.CenterVertically){Box(Modifier.size(7.dp).clip(CircleShape).background(Color(0xFF168451)));Spacer(Modifier.width(6.dp));Text("ALL SYSTEMS READY",fontSize=8.sp,color=muted,fontWeight=FontWeight.Bold);Spacer(Modifier.width(14.dp))}},colors=TopAppBarDefaults.topAppBarColors(containerColor=cloud))},
