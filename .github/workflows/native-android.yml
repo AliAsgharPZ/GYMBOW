@@ -24,4 +24,8 @@ jobs:
         run: |
           mkdir -p app/src/main/assets
           curl -fL --retry 3 "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task" -o app/src/main/assets/pose_landmarker_full.task
+      - name: Download offline pose model
+        run: |
+          mkdir -p app/src/main/assets
+          curl -fL --retry 3 "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task" -o app/src/main/assets/pose_landmarker_full.task
       - run: gradle --no-daemon :app:assembleDebug
