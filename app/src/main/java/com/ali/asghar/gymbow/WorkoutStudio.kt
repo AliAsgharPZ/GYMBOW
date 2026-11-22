@@ -71,13 +71,13 @@ private val baseJoints = listOf(
  Joint("toeL","Left toe",.34f,.94f),Joint("toeR","Right toe",.66f,.94f),
  Joint("thumbL1","L thumb base",.25f,.45f),Joint("thumbL2","L thumb tip",.23f,.43f),Joint("indexL1","L index base",.26f,.48f),Joint("indexL2","L index tip",.24f,.51f),
  Joint("middleL1","L middle base",.28f,.49f),Joint("middleL2","L middle tip",.28f,.53f),Joint("ringL1","L ring base",.30f,.49f),Joint("ringL2","L ring tip",.31f,.52f),Joint("pinkyL1","L pinky base",.32f,.48f),Joint("pinkyL2","L pinky tip",.34f,.50f),
- Joint("thumbR1","R thumb base",.75f,.45f),Joint("thumbR2","R thumb tip",.77f,.43f),Joint("indexR1","R index base",.74f,.48f),Joint("indexR2","R index tip",.76f,.51f),
- Joint("middleR1","R middle base",.72f,.49f),Joint("middleR2","R middle tip",.72f,.53f),Joint("ringR1","R ring base",.70f,.49f),Joint("ringR2","R ring tip",.69f,.52f),Joint("pinkyR1","R pinky base",.68f,.48f),Joint("pinkyR2","R pinky tip",.66f,.50f),
+ Joint("thumbR1","R thumb base",.75f,.45f),Joint("thumbRm","R thumb middle",.76f,.44f),Joint("thumbR2","R thumb tip",.77f,.43f),Joint("indexR1","R index base",.74f,.48f),Joint("indexRm","R index middle",.75f,.50f),Joint("indexR2","R index tip",.76f,.51f),
+ Joint("middleR1","R middle base",.72f,.49f),Joint("middleRm","R middle middle",.72f,.51f),Joint("middleR2","R middle tip",.72f,.53f),Joint("ringR1","R ring base",.70f,.49f),Joint("ringRm","R ring middle",.695f,.51f),Joint("ringR2","R ring tip",.69f,.52f),Joint("pinkyR1","R pinky base",.68f,.48f),Joint("pinkyRm","R pinky middle",.67f,.49f),Joint("pinkyR2","R pinky tip",.66f,.50f),
  Joint("toeL1","L big toe base",.35f,.93f),Joint("toeL2","L big toe tip",.31f,.95f),Joint("toeL3","L toe tips",.36f,.95f),Joint("toeR1","R big toe base",.65f,.93f),Joint("toeR2","R big toe tip",.69f,.95f),Joint("toeR3","R toe tips",.64f,.95f)
 )
 private val bones = listOf("head" to "neck","neck" to "shoulderL","neck" to "shoulderR","shoulderL" to "elbowL","elbowL" to "wristL","shoulderR" to "elbowR","elbowR" to "wristR","shoulderL" to "hipL","shoulderR" to "hipR","hipL" to "hipR","hipL" to "kneeL","kneeL" to "ankleL","ankleL" to "heelL","heelL" to "toeL","hipR" to "kneeR","kneeR" to "ankleR","ankleR" to "heelR","heelR" to "toeR",
- "wristL" to "thumbL1","thumbL1" to "thumbL2","wristL" to "indexL1","indexL1" to "indexL2","wristL" to "middleL1","middleL1" to "middleL2","wristL" to "ringL1","ringL1" to "ringL2","wristL" to "pinkyL1","pinkyL1" to "pinkyL2",
- "wristR" to "thumbR1","thumbR1" to "thumbR2","wristR" to "indexR1","indexR1" to "indexR2","wristR" to "middleR1","middleR1" to "middleR2","wristR" to "ringR1","ringR1" to "ringR2","wristR" to "pinkyR1","pinkyR1" to "pinkyR2","toeL" to "toeL1","toeL1" to "toeL2","toeR" to "toeR1","toeR1" to "toeR2")
+ "wristL" to "thumbL1","thumbL1" to "thumbLm","thumbLm" to "thumbL2","wristL" to "indexL1","indexL1" to "indexLm","indexLm" to "indexL2","wristL" to "middleL1","middleL1" to "middleLm","middleLm" to "middleL2","wristL" to "ringL1","ringL1" to "ringLm","ringLm" to "ringL2","wristL" to "pinkyL1","pinkyL1" to "pinkyLm","pinkyLm" to "pinkyL2",
+ "wristR" to "thumbR1","thumbR1" to "thumbRm","thumbRm" to "thumbR2","wristR" to "indexR1","indexR1" to "indexRm","indexRm" to "indexR2","wristR" to "middleR1","middleR1" to "middleRm","middleRm" to "middleR2","wristR" to "ringR1","ringR1" to "ringRm","ringRm" to "ringR2","wristR" to "pinkyR1","pinkyR1" to "pinkyRm","pinkyRm" to "pinkyR2","toeL" to "toeL1","toeL1" to "toeL2","toeR" to "toeR1","toeR1" to "toeR2")
 
 private fun loadPose(context:Context,key:String):List<Joint>{
  val saved=context.getSharedPreferences("gymbow-native",Context.MODE_PRIVATE).getString("pose_$key",null)?:return baseJoints
@@ -147,7 +147,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
 }
 
 @Composable private fun PoseCanvas(points:List<Joint>,selected:String,onSelect:(String)->Unit,onMove:(List<Joint>)->Unit){
- Canvas(Modifier.fillMaxWidth().height(330.dp).pointerInput(points){detectDragGestures(onDragStart={p->val nearest=points.minByOrNull{hypot((it.x*size.width-p.x).toDouble(),(it.y*size.height-p.y).toDouble())};nearest?.let{onSelect(it.id)}},onDrag={change,_->val x=(change.position.x/size.width).coerceIn(.02f,.98f);val y=(change.position.y/size.height).coerceIn(.02f,.98f);val current=points.firstOrNull{it.id==selected};if(current!=null)onMove(points.map{if(it.id==selected)it.copy(x=x,y=y)else it});change.consume()})}){
+ Canvas(Modifier.fillMaxWidth().height(330.dp).pointerInput(points,selected){var draggedId:String?=null;detectDragGestures(onDragStart={p->val nearest=points.minByOrNull{hypot((it.x*size.width-p.x).toDouble(),(it.y*size.height-p.y).toDouble())};draggedId=nearest?.id;nearest?.let{onSelect(it.id)}},onDrag={change,_->val x=(change.position.x/size.width).coerceIn(.02f,.98f);val y=(change.position.y/size.height).coerceIn(.02f,.98f);val id=draggedId;if(id!=null)onMove(points.map{if(it.id==id)it.copy(x=x,y=y)else it});change.consume()})}){
  val w=size.width;val h=size.height
  drawLine(line,Offset(w*.5f,h*.03f),Offset(w*.5f,h*.97f),1f)
  bones.forEach{(a,b)->val p=points.firstOrNull{it.id==a};val q=points.firstOrNull{it.id==b};if(p!=null&&q!=null)drawLine(ink,Offset(p.x*w,p.y*h),Offset(q.x*w,q.y*h),5f,cap=StrokeCap.Round)}
@@ -192,8 +192,10 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
   Text("REST TIMER · ${rest/60}:${(rest%60).toString().padStart(2,'0')}",fontSize=11.sp,fontWeight=FontWeight.Bold)
   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){LightButton("−15 SEC"){rest=(rest-15).coerceAtLeast(0)};LightButton("+15 SEC"){rest+=15}}
   Text("REFERENCE PHASE",fontSize=9.sp,color=muted,fontWeight=FontWeight.Bold)
-  Text(ex.phases[(set-1).coerceAtMost(ex.phases.lastIndex)],fontSize=14.sp,fontWeight=FontWeight.Bold)
-  Text("Keep the selected movement's pose guide open in Movement Lab while training.",fontSize=9.sp,color=muted)
+  Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){ex.phases.forEachIndexed{i,label->FilterChip(selected=phaseIndex==i,onClick={phaseIndex=i},label={Text(label,fontSize=8.sp)})}}
+  PoseCanvas(runnerPose,runnerJoint,{runnerJoint=it},{runnerPose=it})
+  Text("DRAG JOINTS TO ADJUST THE CURRENT REFERENCE PHASE",fontSize=8.sp,color=muted)
+  DarkButton("SAVE THIS PHASE POSE"){savePose(context,selected.lowercase(Locale.US).replace(" ","_")+"_front_$phaseIndex",runnerPose)}
   DarkButton("FINISH SESSION"){recordWorkoutSession(context,selected+" · "+set+" sets · "+weight.toInt()+" kg");active=false;running=false;restRunning=false;elapsed=0;set=1;reps=0}
  }
 }
