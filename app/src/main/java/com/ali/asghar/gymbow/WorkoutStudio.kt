@@ -157,18 +157,22 @@ private fun poseAngle(points:List<Joint>,a:String,b:String,c:String):Int{
  var query by rememberSaveable{mutableStateOf("")}
  var selected by remember{mutableStateOf(gymExercises.first())}
  var equipment by rememberSaveable{mutableStateOf("All")}
+ var muscleFilter by rememberSaveable{mutableStateOf("All")}
  var view by rememberSaveable{mutableStateOf("FRONT")}
  var phase by rememberSaveable{mutableIntStateOf(0)}
  var points by remember{mutableStateOf(loadPose(ctx,"squat_front_0",referencePose("Barbell squat",0,"FRONT"))) }
  var selectedJoint by rememberSaveable{mutableStateOf("kneeL")}
   val equipmentFilters=listOf("All","Barbell","Dumbbells","Machine","Cable","Bodyweight")
- val filtered=gymExercises.filter{(query.isBlank()||it.name.contains(query,true)||it.muscle.contains(query,true))&&(equipment=="All"||it.equipment.contains(equipment,true)||it.category==equipment)}
+ val muscleFilters=listOf("All","Chest","Back","Shoulders","Biceps","Triceps","Quadriceps","Hamstrings","Glutes","Calves","Core")
+ val filtered=gymExercises.filter{(query.isBlank()||it.name.contains(query,true)||it.muscle.contains(query,true))&&(equipment=="All"||it.equipment.contains(equipment,true)||it.category==equipment)&&(muscleFilter=="All"||it.muscle.contains(muscleFilter,true))}
  LazyColumn(Modifier.fillMaxSize(),contentPadding=PaddingValues(18.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
   item { Column(verticalArrangement=Arrangement.spacedBy(6.dp)){Eyebrow("MOVEMENT LAB · MANUAL BIOMECHANICS");Text("BUILD THE\nPERFECT REP.",fontSize=34.sp,lineHeight=35.sp,fontWeight=FontWeight.Black);Text("Exercise library, equipment setup and adjustable reference poses. No camera required.",fontSize=11.sp,color=muted)} }
   item { Panel {
    Eyebrow("EXERCISE LIBRARY · ${gymExercises.size} MOVEMENTS")
    OutlinedTextField(query,{query=it},modifier=Modifier.fillMaxWidth(),singleLine=true,label={Text("Search exercise or muscle")},leadingIcon={Icon(Icons.Outlined.Search,null)})
    Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){equipmentFilters.forEach{filter->FilterChip(selected=equipment==filter,onClick={equipment=filter},label={Text(filter,fontSize=9.sp)})}}
+   Text("MUSCLE GROUP",fontSize=9.sp,fontWeight=FontWeight.Bold,color=muted)
+   Row(horizontalArrangement=Arrangement.spacedBy(4.dp)){muscleFilters.forEach{filter->FilterChip(selected=muscleFilter==filter,onClick={muscleFilter=filter},label={Text(filter,fontSize=8.sp)})}}
    Text("SELECT MOVEMENT",fontSize=10.sp,fontWeight=FontWeight.Bold)
    Column(Modifier.heightIn(max=190.dp).fillMaxWidth()){
     LazyColumn { items(filtered){ex->TextButton(onClick={selected=ex;phase=0;points=loadPose(ctx,ex.name.lowercase(Locale.US).replace(" ","_")+"_front_0",referencePose(ex.name,0,"FRONT"))},modifier=Modifier.fillMaxWidth()){Column(Modifier.fillMaxWidth()){Text(ex.name,color=ink,fontWeight=FontWeight.Bold,fontSize=12.sp);Text("${ex.muscle} · ${ex.equipment}",color=muted,fontSize=9.sp)}}} }
@@ -235,6 +239,8 @@ private fun poseAngle(points:List<Joint>,a:String,b:String,c:String):Int{
  var set by rememberSaveable{mutableIntStateOf(1)}
  var reps by rememberSaveable{mutableIntStateOf(0)}
  var weight by rememberSaveable{mutableFloatStateOf(20f)}
+ var mode by rememberSaveable{mutableStateOf("STANDARD")}
+ var setLog by remember{mutableStateOf(emptyList<String>())}
  var selected by rememberSaveable{mutableStateOf("Barbell squat")}
  LaunchedEffect(running){while(running){delay(1000);elapsed++}}
  LaunchedEffect(restRunning){while(restRunning&&rest>0){delay(1000);rest--};if(rest==0)restRunning=false}
@@ -246,15 +252,17 @@ private fun poseAngle(points:List<Joint>,a:String,b:String,c:String):Int{
   var expanded by remember{mutableStateOf(false)}
   ExposedDropdownMenuBox(expanded=expanded,onExpandedChange={expanded=it}){
    OutlinedTextField(value=selected,onValueChange={},readOnly=true,label={Text("Movement")},trailingIcon={ExposedDropdownMenuDefaults.TrailingIcon(expanded)},modifier=Modifier.menuAnchor().fillMaxWidth())
-   ExposedDropdownMenu(expanded=expanded,onDismissRequest={expanded=false}){gymExercises.forEach{e->DropdownMenuItem(text={Text(e.name)},onClick={selected=e.name;set=1;reps=0;phaseIndex=0;rest=e.rest;expanded=false})}}
+   ExposedDropdownMenu(expanded=expanded,onDismissRequest={expanded=false}){gymExercises.forEach{e->DropdownMenuItem(text={Text(e.name)},onClick={selected=e.name;set=1;reps=0;phaseIndex=0;rest=e.rest;setLog=emptyList();expanded=false})}}
   }
   Text(String.format(Locale.US,"%02d:%02d",elapsed/60,elapsed%60),fontSize=40.sp,fontWeight=FontWeight.Black)
   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton(if(running)"PAUSE TIMER" else "START TIMER"){active=true;running=!running};LightButton("RESET"){elapsed=0;running=false;active=false}}
+  Text("TRAINING METHOD",fontSize=9.sp,color=muted,fontWeight=FontWeight.Bold)
+  Row(horizontalArrangement=Arrangement.spacedBy(4.dp)){listOf("STANDARD","SUPERSET","DROP SET","CIRCUIT").forEach{m->FilterChip(selected=mode==m,onClick={mode=m},label={Text(m,fontSize=8.sp)})}}
   Text("CURRENT SET",fontSize=9.sp,color=muted,fontWeight=FontWeight.Bold)
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Text("Repetitions",fontSize=12.sp);Row(verticalAlignment=Alignment.CenterVertically){IconButton({reps=(reps-1).coerceAtLeast(0)}){Icon(Icons.Outlined.Remove,null)};Text(reps.toString(),fontSize=22.sp,fontWeight=FontWeight.Black);IconButton({reps++}){Icon(Icons.Outlined.Add,null)}}}
   Text("LOAD · ${weight.toInt()} KG",fontSize=10.sp,fontWeight=FontWeight.Bold)
   Slider(value=weight,onValueChange={weight=it},valueRange=0f..250f)
-  Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("COMPLETE SET"){if(set<ex.sets){set++;phaseIndex=(set-1).coerceAtMost(ex.phases.lastIndex);reps=0;rest=ex.rest;restRunning=true}else{set=ex.sets;reps=0;restRunning=false}};LightButton("START REST"){running=false;rest=ex.rest;restRunning=true}}
+  Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("COMPLETE SET"){setLog=setLog+("Set "+set+" · "+reps+" reps · "+weight.toInt()+" kg");if(set<ex.sets){set++;phaseIndex=(set-1).coerceAtMost(ex.phases.lastIndex);reps=0;rest=ex.rest;restRunning=true}else{set=ex.sets;reps=0;restRunning=false}};LightButton("START REST"){running=false;rest=ex.rest;restRunning=true}}
   Text("REST TIMER · ${rest/60}:${(rest%60).toString().padStart(2,'0')}",fontSize=11.sp,fontWeight=FontWeight.Bold)
   DarkButton(if(restRunning)"PAUSE REST" else "RESUME REST"){restRunning=!restRunning}
   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){LightButton("−15 SEC"){rest=(rest-15).coerceAtLeast(0)};LightButton("+15 SEC"){rest+=15}}
@@ -263,6 +271,7 @@ private fun poseAngle(points:List<Joint>,a:String,b:String,c:String):Int{
   PoseCanvas(runnerPose,runnerJoint,{runnerJoint=it},{runnerPose=it})
   Text("DRAG JOINTS TO ADJUST THE CURRENT REFERENCE PHASE",fontSize=8.sp,color=muted)
   DarkButton("SAVE THIS PHASE POSE"){savePose(context,selected.lowercase(Locale.US).replace(" ","_")+"_front_$phaseIndex",runnerPose)}
-  DarkButton("FINISH SESSION"){recordWorkoutSession(context,selected+" · "+set+" sets · "+weight.toInt()+" kg");active=false;running=false;restRunning=false;elapsed=0;set=1;reps=0}
+  if(setLog.isNotEmpty())Text(setLog.joinToString("   /   "),fontSize=9.sp,color=muted)
+  DarkButton("FINISH SESSION"){recordWorkoutSession(context,selected+" · "+mode+" · "+setLog.joinToString(" / "));active=false;running=false;restRunning=false;elapsed=0;set=1;reps=0;setLog=emptyList()}
  }
 }
