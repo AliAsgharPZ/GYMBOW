@@ -73,7 +73,10 @@ class MainActivity:ComponentActivity(){
  val kcal=foods.sumOf{it.kcal*it.grams/100.0}
  val protein=foods.sumOf{it.protein*it.grams/100.0}
  Scaffold(containerColor=cloud,topBar={TopAppBar(title={Row{Text("GYM",fontWeight=FontWeight.Black,letterSpacing=(-1).sp);Text("BOW",fontWeight=FontWeight.Light,letterSpacing=(-1).sp)}},actions={Row(verticalAlignment=Alignment.CenterVertically){Box(Modifier.size(7.dp).clip(CircleShape).background(Color(0xFF168451)));Spacer(Modifier.width(6.dp));Text("ALL SYSTEMS READY",fontSize=8.sp,color=muted,fontWeight=FontWeight.Bold);Spacer(Modifier.width(14.dp))}},colors=TopAppBarDefaults.topAppBarColors(containerColor=cloud))},
- bottomBar={NavigationBar(containerColor=paper,tonalElevation=0.dp){Tab.entries.forEach{t->val icon=when(t){Tab.HOME->Icons.Outlined.Dashboard;Tab.MOVE->Icons.Outlined.AccessibilityNew;Tab.TRAIN->Icons.Outlined.FitnessCenter;Tab.FOOD->Icons.Outlined.Restaurant;Tab.REST->Icons.Outlined.Bedtime;Tab.PROGRESS->Icons.Outlined.BarChart};NavigationBarItem(selected=tab==t,onClick={tab=t},icon={Icon(icon,null)},label={Text(t.title,fontSize=9.sp,fontWeight=FontWeight.SemiBold)},colors=NavigationBarItemDefaults.colors(selectedIconColor=ink,selectedTextColor=ink,indicatorColor=cloud,unselectedIconColor=muted,unselectedTextColor=muted))}})}
+ bottomBar={NavigationBar(containerColor=paper,tonalElevation=0.dp){Tab.entries.forEach{t ->
+    val icon=when(t){Tab.HOME->Icons.Outlined.Dashboard;Tab.MOVE->Icons.Outlined.AccessibilityNew;Tab.TRAIN->Icons.Outlined.FitnessCenter;Tab.FOOD->Icons.Outlined.Restaurant;Tab.REST->Icons.Outlined.Bedtime;Tab.PROGRESS->Icons.Outlined.BarChart}
+    NavigationBarItem(selected=tab==t,onClick={tab=t},icon={Icon(icon,null)},label={Text(t.title,fontSize=9.sp,fontWeight=FontWeight.SemiBold)},colors=NavigationBarItemDefaults.colors(selectedIconColor=ink,selectedTextColor=ink,indicatorColor=cloud,unselectedIconColor=muted,unselectedTextColor=muted))
+ }}}
  ){padding->
   when(tab){
    Tab.HOME->Page(padding){Heading("YOUR TRAINING · YOUR DATA","BUILT BY\nCONSISTENCY.","Your body is a long-term project. Let's put in the work.");Panel{Eyebrow("THIS WEEK");Text("WEEKLY CHECK-IN",fontSize=20.sp,fontWeight=FontWeight.Black);Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){listOf("M","T","W","T","F","S","S").forEachIndexed{i,d->Column(horizontalAlignment=Alignment.CenterHorizontally){Text(d,fontSize=9.sp,color=muted);Box(Modifier.padding(top=6.dp).size(27.dp).clip(CircleShape).background(if(i<completed.coerceAtMost(7))ink else cloud),contentAlignment=Alignment.Center){Text((16+i).toString(),fontSize=9.sp,color=if(i<completed.coerceAtMost(7))paper else muted)}}}};Text(completed.toString()+" sessions completed",fontSize=10.sp,color=muted)};Box(Modifier.fillMaxWidth().height(155.dp).clip(RoundedCornerShape(4.dp)).background(ink).padding(18.dp),contentAlignment=Alignment.CenterStart){Column{Eyebrow("YOUR NEXT CHAPTER STARTS NOW",Color.LightGray);Text("NO SHORTCUTS.\nJUST PROGRESS.",fontSize=28.sp,lineHeight=30.sp,fontWeight=FontWeight.Black,color=paper);Button(onClick={tab=Tab.TRAIN},colors=ButtonDefaults.buttonColors(containerColor=paper,contentColor=ink),shape=RoundedCornerShape(3.dp)){Text("VIEW YOUR PLAN",fontSize=10.sp,fontWeight=FontWeight.Bold)}}};Eyebrow("YOUR NUMBERS");Text("THE DAILY CHECK-IN",fontSize=20.sp,fontWeight=FontWeight.Black);Metric("ENERGY INTAKE",kcal.toInt().toString(),"kcal",(kcal/2700).toFloat(),(2700-kcal.toInt()).coerceAtLeast(0).toString()+" kcal remaining");Metric("PROTEIN",protein.toInt().toString(),"g",(protein/140).toFloat(),(140-protein.toInt()).coerceAtLeast(0).toString()+" g to target");Metric("BODY WEIGHT",String.format(Locale.US,"%.1f",weight),"kg",.72f,"Target tracking");Metric("LAST NIGHT",String.format(Locale.US,"%.1f",sleep),"hrs",sleep/8,"Sleep duration");Panel{Eyebrow("ON THE SCHEDULE");Text("UP NEXT",fontSize=20.sp,fontWeight=FontWeight.Black);Text("Upper body strength · 65 MIN",fontSize=12.sp,color=muted);DarkButton("OPEN TRAINING"){tab=Tab.TRAIN}}}
@@ -95,15 +98,43 @@ class MainActivity:ComponentActivity(){
 @Composable private fun DarkButton(label:String,onClick:()->Unit){Button(onClick,shape=RoundedCornerShape(3.dp),colors=ButtonDefaults.buttonColors(containerColor=ink,contentColor=paper),contentPadding=PaddingValues(horizontal=13.dp,vertical=7.dp)){Text(label,fontSize=9.sp,fontWeight=FontWeight.Bold,letterSpacing=.4.sp)}}
 @Composable private fun LightButton(label:String,onClick:()->Unit){OutlinedButton(onClick,shape=RoundedCornerShape(3.dp),border=BorderStroke(1.dp,line),contentPadding=PaddingValues(horizontal=11.dp,vertical=7.dp)){Text(label,fontSize=9.sp,fontWeight=FontWeight.Bold,color=ink)}}
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable private fun MovementPage(){
  val context=LocalContext.current
  var granted by remember{mutableStateOf(ContextCompat.checkSelfPermission(context,Manifest.permission.CAMERA)==PackageManager.PERMISSION_GRANTED)}
  var cameraOn by rememberSaveable{mutableStateOf(false)}
  var exercise by rememberSaveable{mutableStateOf("Barbell squat")}
  val permission=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){granted=it;cameraOn=it}
- Page(PaddingValues(0.dp)){Heading("BIOMECHANICS · FULL BODY TRACKING","MOVE WITH\nPRECISION.","Native camera workspace for movement capture.");Panel{var expanded by remember{mutableStateOf(false)};ExposedDropdownMenuBox(expanded=expanded,onExpandedChange={expanded=it}){OutlinedTextField(value=exercise,onValueChange={},readOnly=true,label={Text("Exercise")},trailingIcon={ExposedDropdownMenuDefaults.TrailingIcon(expanded)},modifier=Modifier.menuAnchor().fillMaxWidth());ExposedDropdownMenu(expanded=expanded,onDismissRequest={expanded=false}){listOf("Barbell squat","Deadlift","Bench press","Overhead press","Biceps curl","Push-up","Lunge","Pull-up","Running","Custom movement").forEach{DropdownMenuItem(text={Text(it)},onClick={exercise=it;expanded=false})}}}}
- if(cameraOn&&granted){CameraPreview(Modifier.fillMaxWidth().height(360.dp));DarkButton("STOP CAMERA"){cameraOn=false}}else{Box(Modifier.fillMaxWidth().height(245.dp).clip(RoundedCornerShape(4.dp)).background(ink),contentAlignment=Alignment.Center){Column(horizontalAlignment=Alignment.CenterHorizontally){Icon(Icons.Outlined.AccessibilityNew,null,tint=paper,modifier=Modifier.size(42.dp));Text("FULL BODY CAPTURE",fontWeight=FontWeight.Bold,color=paper);Text("Keep your full body in frame",fontSize=10.sp,color=Color.LightGray)}};DarkButton("START CAMERA"){if(granted)cameraOn=true else permission.launch(Manifest.permission.CAMERA)}}
- };Panel{Eyebrow("POSE ESTIMATION");Text("33 LANDMARK TRACKING",fontSize=18.sp,fontWeight=FontWeight.Black);Text("CameraX preview is native. The MediaPipe landmark inference, joint-angle inspector and keyframe export from the web edition still need their Android implementation; this build does not claim pose detection is already active.",fontSize=10.sp,lineHeight=16.sp,color=muted)}}
+ Page(PaddingValues(0.dp)){
+  Heading("BIOMECHANICS · FULL BODY TRACKING","MOVE WITH\nPRECISION.","Native camera workspace for movement capture.")
+  Panel{
+   var expanded by remember{mutableStateOf(false)}
+   ExposedDropdownMenuBox(expanded=expanded,onExpandedChange={expanded=it}){
+    OutlinedTextField(value=exercise,onValueChange={},readOnly=true,label={Text("Exercise")},trailingIcon={ExposedDropdownMenuDefaults.TrailingIcon(expanded)},modifier=Modifier.menuAnchor().fillMaxWidth())
+    ExposedDropdownMenu(expanded=expanded,onDismissRequest={expanded=false}){
+     listOf("Barbell squat","Deadlift","Bench press","Overhead press","Biceps curl","Push-up","Lunge","Pull-up","Running","Custom movement").forEach{item->DropdownMenuItem(text={Text(item)},onClick={exercise=item;expanded=false})}
+    }
+   }
+  }
+  if(cameraOn&&granted){
+   CameraPreview(Modifier.fillMaxWidth().height(360.dp))
+   DarkButton("STOP CAMERA"){cameraOn=false}
+  }else{
+   Box(Modifier.fillMaxWidth().height(245.dp).clip(RoundedCornerShape(4.dp)).background(ink),contentAlignment=Alignment.Center){
+    Column(horizontalAlignment=Alignment.CenterHorizontally){
+     Icon(Icons.Outlined.AccessibilityNew,null,tint=paper,modifier=Modifier.size(42.dp))
+     Text("FULL BODY CAPTURE",fontWeight=FontWeight.Bold,color=paper)
+     Text("Keep your full body in frame",fontSize=10.sp,color=Color.LightGray)
+    }
+   }
+   DarkButton("START CAMERA"){if(granted)cameraOn=true else permission.launch(Manifest.permission.CAMERA)}
+  }
+  Panel{
+   Eyebrow("POSE ESTIMATION")
+   Text("33 LANDMARK TRACKING",fontSize=18.sp,fontWeight=FontWeight.Black)
+   Text("CameraX preview is native. The MediaPipe landmark inference, joint-angle inspector and keyframe export from the web edition still need their Android implementation; this build does not claim pose detection is already active.",fontSize=10.sp,lineHeight=16.sp,color=muted)
+  }
+ }
 }
 
 @Composable private fun CameraPreview(modifier:Modifier){
