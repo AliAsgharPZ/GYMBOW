@@ -119,6 +119,38 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
  context.getSharedPreferences("gymbow-native",Context.MODE_PRIVATE).edit().putString("pose_$key",points.joinToString(";"){"${it.id},${it.x},${it.y}"}).apply()
 }
 
+private data class EquipmentInfo(val name:String,val kind:String,val use:String,val setup:String)
+private val equipmentCatalog=listOf(
+ EquipmentInfo("Power rack","Free-weight station","Squat · Bench · Overhead press","Set safeties below the bottom range; check J-hooks and rack stability."),
+ EquipmentInfo("Smith machine","Guided bar path","Smith squat · Incline press · Calf raise","Set hooks and safeties before loading; bar path is fixed."),
+ EquipmentInfo("Cable crossover","Adjustable pulley","Cable fly · Face pull · Pushdown","Set pulley height and pin; inspect cable and carabiner."),
+ EquipmentInfo("Lat pulldown","Selectorized machine","Lat pulldown · Straight-arm pulldown","Adjust thigh pad and choose a comfortable handle."),
+ EquipmentInfo("Seated row","Selectorized machine","Seated row · Neutral-grip row","Brace feet and align torso with cable pull."),
+ EquipmentInfo("Leg press","Plate-loaded / selectorized","Leg press · Calf press","Set safety stops; keep pelvis supported through range."),
+ EquipmentInfo("Hack squat","Plate-loaded machine","Hack squat","Position shoulders and back against pads; set safeties."),
+ EquipmentInfo("Leg extension","Selectorized machine","Knee extension","Align machine pivot with knee joint; pad above ankle."),
+ EquipmentInfo("Leg curl","Selectorized machine","Seated / lying leg curl","Align knee pivot and adjust ankle roller."),
+ EquipmentInfo("Chest press","Selectorized machine","Machine chest press","Set seat so handles start around mid-chest."),
+ EquipmentInfo("Pec deck / rear delt","Selectorized machine","Chest fly · Reverse fly","Adjust seat and arm position for shoulder comfort."),
+ EquipmentInfo("Assisted pull-up / dip","Counterweighted machine","Assisted pull-up · Dip","Select assistance load and mount/dismount safely."),
+ EquipmentInfo("Dumbbells","Free weights","Rows · Curls · Presses · Lunges","Choose stable, matching pairs and clear floor space."),
+ EquipmentInfo("Barbell + plates","Free weights","Squat · Deadlift · Bench · Row","Inspect collars and plates; load evenly."),
+ EquipmentInfo("Adjustable bench","Bench / support","Incline press · Rows · Hip thrust","Lock backrest and seat angle before loading."),
+ EquipmentInfo("Resistance bands","Elastic resistance","Warm-up · Mobility · Assisted reps","Check for tears and secure anchor points.")
+)
+@Composable private fun EquipmentLibraryPanel(){
+ Panel {
+  Eyebrow("GYM EQUIPMENT DATABASE · 16 TYPES")
+  equipmentCatalog.forEach{gear->Column(verticalArrangement=Arrangement.spacedBy(3.dp)){Text(gear.name,fontSize=12.sp,fontWeight=FontWeight.Bold);Text(gear.kind+" · "+gear.use,fontSize=9.sp,color=muted);Text(gear.setup,fontSize=9.sp,color=muted)};HorizontalDivider(color=line)}
+ }
+}
+private fun poseAngle(points:List<Joint>,a:String,b:String,c:String):Int{
+ val p=points.firstOrNull{it.id==a}?:return 0;val q=points.firstOrNull{it.id==b}?:return 0;val r=points.firstOrNull{it.id==c}?:return 0
+ val ux=p.x-q.x;val uy=p.y-q.y;val vx=r.x-q.x;val vy=r.y-q.y
+ val mag=kotlin.math.sqrt((ux*ux+uy*uy)*(vx*vx+vy*vy));if(mag<1e-6f)return 0
+ return Math.toDegrees(kotlin.math.acos(((ux*vx+uy*vy)/mag).coerceIn(-1f,1f)).toDouble()).toInt()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun WorkoutStudioPage(){
  val ctx= androidx.compose.ui.platform.LocalContext.current
@@ -178,7 +210,7 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
 }
 
 @Composable private fun PoseCanvas(points:List<Joint>,selected:String,onSelect:(String)->Unit,onMove:(List<Joint>)->Unit){
- Canvas(Modifier.fillMaxWidth().height(330.dp).pointerInput(points,selected){var draggedId:String?=null;detectDragGestures(onDragStart={p->val nearest=points.minByOrNull{hypot((it.x*size.width-p.x).toDouble(),(it.y*size.height-p.y).toDouble())};draggedId=nearest?.id;nearest?.let{onSelect(it.id)}},onDrag={change,_->val x=(change.position.x/size.width).coerceIn(.02f,.98f);val y=(change.position.y/size.height).coerceIn(.02f,.98f);val id=draggedId;if(id!=null)onMove(points.map{if(it.id==id)it.copy(x=x,y=y)else it});change.consume()})}){
+ Canvas(Modifier.fillMaxWidth().height(330.dp).pointerInput(Unit){var draggedId:String?=null;detectDragGestures(onDragStart={p->val nearest=points.minByOrNull{hypot((it.x*size.width-p.x).toDouble(),(it.y*size.height-p.y).toDouble())};draggedId=nearest?.id;nearest?.let{onSelect(it.id)}},onDrag={change,_->val x=(change.position.x/size.width).coerceIn(.02f,.98f);val y=(change.position.y/size.height).coerceIn(.02f,.98f);val id=draggedId;if(id!=null)onMove(points.map{if(it.id==id)it.copy(x=x,y=y)else it});change.consume()})}){
  val w=size.width;val h=size.height
  drawLine(line,Offset(w*.5f,h*.03f),Offset(w*.5f,h*.97f),1f)
  bones.forEach{(a,b)->val p=points.firstOrNull{it.id==a};val q=points.firstOrNull{it.id==b};if(p!=null&&q!=null)drawLine(ink,Offset(p.x*w,p.y*h),Offset(q.x*w,q.y*h),5f,cap=StrokeCap.Round)}
@@ -219,8 +251,9 @@ private fun savePose(context:Context,key:String,points:List<Joint>){
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Text("Repetitions",fontSize=12.sp);Row(verticalAlignment=Alignment.CenterVertically){IconButton({reps=(reps-1).coerceAtLeast(0)}){Icon(Icons.Outlined.Remove,null)};Text(reps.toString(),fontSize=22.sp,fontWeight=FontWeight.Black);IconButton({reps++}){Icon(Icons.Outlined.Add,null)}}}
   Text("LOAD · ${weight.toInt()} KG",fontSize=10.sp,fontWeight=FontWeight.Bold)
   Slider(value=weight,onValueChange={weight=it},valueRange=0f..250f)
-  Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("COMPLETE SET"){if(set<ex.sets){set++;reps=0;rest=ex.rest;restRunning=true}else{set=ex.sets;reps=0;restRunning=false}};LightButton("START REST"){running=false;rest=ex.rest;restRunning=true}}
+  Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){DarkButton("COMPLETE SET"){if(set<ex.sets){set++;phaseIndex=(set-1).coerceAtMost(ex.phases.lastIndex);reps=0;rest=ex.rest;restRunning=true}else{set=ex.sets;reps=0;restRunning=false}};LightButton("START REST"){running=false;rest=ex.rest;restRunning=true}}
   Text("REST TIMER · ${rest/60}:${(rest%60).toString().padStart(2,'0')}",fontSize=11.sp,fontWeight=FontWeight.Bold)
+  DarkButton(if(restRunning)"PAUSE REST" else "RESUME REST"){restRunning=!restRunning}
   Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){LightButton("−15 SEC"){rest=(rest-15).coerceAtLeast(0)};LightButton("+15 SEC"){rest+=15}}
   Text("REFERENCE PHASE",fontSize=9.sp,color=muted,fontWeight=FontWeight.Bold)
   Row(horizontalArrangement=Arrangement.spacedBy(5.dp)){ex.phases.forEachIndexed{i,label->FilterChip(selected=phaseIndex==i,onClick={phaseIndex=i},label={Text(label,fontSize=8.sp)})}}
