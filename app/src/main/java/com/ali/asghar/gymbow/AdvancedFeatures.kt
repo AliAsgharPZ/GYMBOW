@@ -48,7 +48,7 @@ fun WorkoutSchedulePanel(context: Context) {
         Eyebrow("YOUR WEEK · EDITABLE PROGRAM")
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text("TRAINING SPLIT", fontSize = 20.sp, fontWeight = FontWeight.Black)
-            Text("\${plan.size} DAYS", fontSize = 10.sp, color = muted)
+            Text("${plan.size} DAYS", fontSize = 10.sp, color = muted)
         }
         plan.forEachIndexed { index, item ->
             val parts = item.split("|", limit = 2)
@@ -114,7 +114,7 @@ fun BodyMetricsPanel(context: Context, weightKg: Float) {
         HorizontalDivider(color = line)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("HEIGHT", fontSize = 10.sp, color = muted)
-            Text("\${heightCm.toInt()} cm", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Text("${heightCm.toInt()} cm", fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
         Slider(
             value = heightCm,
