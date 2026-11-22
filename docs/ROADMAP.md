@@ -5,9 +5,10 @@
 - [x] Local workout planner and session timer
 - [x] Food diary with portion-scaled macros
 - [x] Manual sleep session and hydration log
-- [x] Editable 2D skeleton, joint-angle readouts and keyframes
-- [x] Local persistence and motion JSON export
-- [ ] Automated tests and CI build gate
+- [x] Full-body 33-landmark pose estimation from camera/video
+- [x] Per-landmark confidence, relative depth and bilateral 2D joint angles
+- [x] Pose keyframe capture and JSON export
+- [x] Local persistence and CI build gate
 
 ## Phase 2 — reliable data
 - [ ] Account system, PostgreSQL API and encrypted sync
@@ -19,11 +20,11 @@
 
 ## Phase 3 — movement intelligence
 - [ ] Anatomical 3D rig with selectable body regions
-- [ ] Multi-view camera calibration and video import
-- [ ] Pose estimation and temporal smoothing
+- [ ] Multi-view camera calibration and 3D reconstruction
+- [ ] Temporal smoothing and multi-person tracking
 - [ ] Exercise-specific range-of-motion and technique checks
 - [ ] Keyframe interpolation, curves, camera tracks and clip comparison
-- [ ] Confidence scores and explainable feedback; no unsupported safety claims
+- [ ] Confidence-aware explainable feedback; no unsupported safety claims
 
 ## Phase 4 — recovery ecosystem
 - [ ] Health Connect and Apple Health adapters
@@ -35,4 +36,4 @@
 - [ ] Persian/English localization and RTL
 - [ ] Offline-first sync and conflict handling
 - [ ] Accessibility audit, security review and privacy controls
-- [ ] Integration and end-to-end tests; release automation
+- [ ] Integration and end-to-end tests
